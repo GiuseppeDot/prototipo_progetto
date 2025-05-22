@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AR Menu – Demo tipo KabaQ</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+    <script
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+      type="module"
+    ></script>
+    <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+
+    <!-- THEME -->
+    <link rel="stylesheet" href="test.css" />
+  </head>
+
+  <body>
+    <!-- Pulsante per riaprire il menu quando è chiuso -->
+    <button id="sidebarToggle" aria-label="Apri menu">☰</button>
+
+    <!-- ===== SIDEBAR ================================================= -->
+    <div id="sidebar">
+      <h2>L'ipotetico</h2>
+
+      <details open>
+        <summary>Best Seller</summary>
+        <div id="bestsellerList"></div>
+      </details>
+
+      <details>
+        <summary>
+          <img src="./asset/primi.png" alt="Primi" class="menu-label" />
+        </summary>
+        <div id="primiList"></div>
+      </details>
+
+      <details>
+        <summary>
+          <img src="./asset/secondi.png" alt="Secondi" class="menu-label" />
+        </summary>
+        <div id="secondiList"></div>
+      </details>
+    </div>
+
+    <!-- ===== CARRELLO FLOATING & DRAWER =============================== -->
+    <button id="cartBtn" aria-label="Apri carrello">
+      🛒<span id="badge">0</span>
+    </button>
+
+    <aside id="cartPane">
+      <button id="closeCart" class="closeBtn">✕</button>
+      <h3>Il tuo ordine</h3>
+
+      <ul id="cartItems"></ul>
+      <strong id="cartTotal">Totale €0,00</strong><br />
+
+      <button id="clearCart">Svuota</button>
+      <button id="checkoutBtn">Checkout</button>
+    </aside>
+
+    <!-- ===== AR SCENE =============================================== -->
+    <a-scene
+      embedded
+      vr-mode-ui="enabled:false"
+      renderer="logarithmicDepthBuffer:true"
+      arjs="trackingMethod:best;sourceType:webcam;debugUIEnabled:false"
+    >
+      <a-marker
+        id="qr"
+        preset="custom"
+        type="pattern"
+        url="markerQR.patt"
+        emitevents="true"
+        smooth="true"
+        smoothCount="10"
+        smoothTolerance="0.01"
+        smoothThreshold="2"
+      >
+        <a-entity id="modelHolder" visible="false"></a-entity>
+      </a-marker>
+      <a-entity camera></a-entity>
+    </a-scene>
+
+    <!-- ===== Fallback 3D viewer + QR canvas ========================= -->
+    <model-viewer id="fallback" camera-controls auto-rotate ar></model-viewer>
+    <canvas id="qrCanvas"></canvas>
+
+    <!-- ===== APP LOGIC ============================================= -->
+    <script src="test.js"></script>
+  </body>
+</html>
