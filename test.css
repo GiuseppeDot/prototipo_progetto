@@ -1,440 +1,265 @@
-/* ===== GLOBAL VARS ===== */
+/* ===============================================================
+   STILI GENERALI
+================================================================ */
 :root {
-  --sidebar-w: 300px;
-  --bg-1: #08090b;
-  --bg-2: #14161d;
-  --accent-hot: #ff9100;
-  --accent-cold: #00d0ff;
-  --glass: #ffffff0a;
-  --radius: 18px;
-  --blur: 22px;
-  --t: 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --primary: #007bff; /* Blu primario */
+  --accent: #ffc107; /* Giallo accento */
+  --bg-main: #f8f9fa; /* Sfondo principale chiaro */
+  --bg-alt: #e9ecef; /* Sfondo alternativo leggermente più scuro */
+  --text-dark: #343a40; /* Testo scuro */
+  --text-light: #f8f9fa; /* Testo chiaro */
+  --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --sidebar-w: 320px; /* Larghezza sidebar */
+  --font-main: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-html,
 body {
+  font-family: var(--font-main);
   margin: 0;
-  height: 100%;
-  overflow: hidden;
-  background: radial-gradient(ellipse at 50% -70%, #1d202a 0%, var(--bg-1) 60%)
-    fixed;
-  color: #f6f6f9;
-  font-family: "Poppins", sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  line-height: 1.6;
+  overflow-x: hidden; /* Previeni scroll orizzontale */
+  /* Transition for sidebar visibility */
+  transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1); /* If body itself moves */
 }
 
-/* ===== SIDEBAR (glass) ===== */
+h2, h3, h4 {
+  color: var(--primary);
+  margin-top: 0;
+}
+
+button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease;
+}
+button:hover {
+  background-color: #0056b3; /* Blu più scuro */
+}
+button.secondary {
+  background-color: var(--accent);
+  color: var(--text-dark);
+}
+button.secondary:hover {
+  background-color: #e0a800; /* Giallo più scuro */
+}
+
+/* ===============================================================
+   SIDEBAR (MENU)
+================================================================ */
 #sidebar {
   position: fixed;
   top: 0;
   left: 0;
   width: var(--sidebar-w);
-  height: 100%;
-  padding: 20px 22px;
-  box-sizing: border-box;
-  background: var(--glass);
-  backdrop-filter: blur(var(--blur));
-  border-right: 1px solid #ffffff1c;
+  height: 100vh;
+  background-color: white;
+  box-shadow: var(--shadow);
+  padding: 20px;
   overflow-y: auto;
-  animation: slideIn 0.8s 0.3s forwards;
-  transform: translateX(-320px);
-  opacity: 0;
-  z-index: 5;
-}
-@keyframes slideIn {
-  to {
-    transform: none;
-    opacity: 1;
-  }
+  z-index: 100;
+  transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 #sidebar h2 {
-  margin: 0 0 24px;
-  font-size: 26px;
-  color: var(--accent-hot);
-  text-shadow: 0 0 6px var(--accent-hot);
+  text-align: center;
+  margin-bottom: 25px;
 }
-
-/* details / image labels */
-details {
-  margin-bottom: 20px;
+#sidebar details {
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--bg-alt);
 }
-details > summary {
-  list-style: none;
+#sidebar summary {
+  font-weight: bold;
   cursor: pointer;
+  padding: 10px 0;
   display: flex;
   align-items: center;
-  transition: filter 0.4s;
 }
-details > summary:hover {
-  filter: drop-shadow(0 0 8px var(--accent-cold));
-}
-details > summary::before {
-  content: "▶";
-  color: var(--accent-cold);
-  font-size: 18px;
-  margin-right: 8px;
-  transition: transform var(--t);
-}
-details[open] > summary::before {
-  transform: rotate(90deg);
-}
-.menu-label {
-  width: 180px;
-  pointer-events: none;
-  transition: transform 0.6s cubic-bezier(0.2, 1.5, 0.5, 1);
-}
-details[open] .menu-label {
-  transform: scale(1.06) rotate(-1deg);
+#sidebar summary img.menu-label {
+  height: 2em; /* Altezza dell'immagine come etichetta */
+  margin-right: 10px;
 }
 
-/* cards */
 .card {
-  background: var(--glass);
-  border: 1px solid #ffffff14;
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(calc(var(--blur) * 0.7));
-  box-shadow: 0 6px 24px -8px #000;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.35s, box-shadow 0.35s;
+  background-color: #fff;
+  border: 1px solid var(--bg-alt);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: var(--shadow);
 }
 .card img {
   width: 100%;
-  aspect-ratio: 4/3;
+  height: 150px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 6px;
   margin-bottom: 10px;
 }
-.card::after {
-  content: "";
-  position: absolute;
-  left: -120%;
-  top: 0;
-  width: 240%;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--accent-cold),
-    transparent
-  );
-  animation: scan 5s linear infinite;
-}
-@keyframes scan {
-  100% {
-    left: 120%;
-  }
-}
-.card:hover {
-  transform: translateY(-6px) scale(1.015);
-  box-shadow: 0 12px 28px -6px #000, 0 0 16px var(--accent-cold);
-}
 .card h4 {
-  margin: 0 0 6px;
-  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 1.1em;
 }
 .card p {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: #c2c2d0;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+.card button {
+  width: calc(50% - 5px); /* Due bottoni per riga */
+  margin-top: 5px;
+}
+.card button.showAR {
+  margin-right: 10px;
 }
 
-/* buttons */
-button {
-  border: none;
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-weight: 600;
-  font-size: 15px;
-  background: linear-gradient(135deg, #2d2f37, #1c1e25);
-  color: #f6f6f9;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
-}
-button:hover {
-  background: linear-gradient(135deg, var(--accent-cold), #005b79);
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 0 12px var(--accent-cold);
+/* Pulsante per riaprire il menu quando chiuso */
+#sidebarToggle {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 101; /* Sopra la sidebar quando è chiusa */
+  display: none; /* Nascosto di default */
+  background-color: rgba(0,0,0,0.6);
+  padding: 8px 12px;
 }
 
-/* —— FAB cart button —— */
+/* Quando la sidebar è chiusa */
+body.sidebar-closed #sidebar {
+  transform: translateX(calc(-1 * var(--sidebar-w)));
+}
+body.sidebar-closed #sidebarToggle {
+  display: block;
+}
+
+/* ===============================================================
+   CARRELLO (PANE E PULSANTE FLOATING)
+================================================================ */
 #cartBtn {
   position: fixed;
-  bottom: 26px;
-  left: auto;
-  right: 26px;
-  z-index: 8;
-  width: 66px;
-  height: 66px;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, var(--accent-hot), #b05000);
+  font-size: 1.8em; /* Icona più grande */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 100;
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 30px;
-  color: #111;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 0 14px var(--accent-hot), 0 0 30px #000 inset;
-  transition: transform 0.25s, box-shadow 0.25s;
-  left: calc(var(--sidebar-w) + 26px);
-  right: auto;
+  align-items: center;
+  transition: transform 0.2s ease, opacity 0.3s ease;
 }
-#cartBtn:hover {
-  transform: scale(1.08) rotate(5deg);
-  box-shadow: 0 0 20px var(--accent-hot), 0 0 40px var(--accent-hot);
+#cartBtn.hide { /* ① per nascondere il FAB */
+  transform: scale(0);
+  opacity: 0;
 }
 #badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 26px;
-  height: 26px;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
   border-radius: 50%;
-  background: var(--accent-cold);
-  color: #000;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 10px var(--accent-cold);
+  padding: 2px 6px;
+  font-size: 0.5em; /* Relativo al font-size del #cartBtn */
 }
 
-/* —— Drawer —— */
 #cartPane {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  max-height: 60%;
-  background: var(--glass);
-  backdrop-filter: blur(calc(var(--blur) * 1.2));
-  border-top: 1px solid #ffffff30;
-  z-index: 7;
-  padding: 26px 20px 30px;
-  box-sizing: border-box;
-  transform: translateY(100%);
-  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.25, 1);
-  overflow-y: auto;
-  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.8);
+  top: 0;
+  right: -350px; /* Nascosto fuori schermo */
+  width: 350px;
+  height: 100vh;
+  background-color: white;
+  box-shadow: -3px 0 10px rgba(0,0,0,0.15);
+  padding: 20px;
+  z-index: 105; /* Sopra la sidebar e il FAB */
+  transition: right 0.4s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 #cartPane.open {
-  transform: translateY(0);
+  right: 0; /* Visibile */
 }
-
 #cartPane h3 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  letter-spacing: 0.5px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 #cartPane ul {
-  padding: 0;
   list-style: none;
-  margin: 0 0 18px 0;
+  padding: 0;
+  flex-grow: 1; /* Fa sì che la lista occupi lo spazio disponibile */
+  overflow-y: auto; /* Scroll se gli item sono troppi */
 }
 #cartPane li {
-  margin: 6px 0;
-  border-bottom: 1px solid #ffffff14;
-  padding-bottom: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bg-alt);
 }
-#cartPane strong {
-  display: block;
-  margin-bottom: 14px;
-  font-size: 18px;
+#cartPane #cartTotal {
+  font-size: 1.2em;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  text-align: right;
 }
-
-#cartPane button {
-  margin-right: 8px;
-  padding: 10px 16px;
-  font-size: 15px;
-}
-#checkoutBtn {
-  background: linear-gradient(135deg, var(--accent-cold), #006e8b);
-}
-
-@keyframes pulse {
-  50% {
-    box-shadow: 0 0 20px var(--accent-hot);
-  }
-}
-#badge {
+#cartPane .closeBtn {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent-cold);
-  color: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-}
-@keyframes pop {
-  0% {
-    transform: scale(0.9);
-  }
-  60% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-.pulse {
-  animation: pop 0.4s ease;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: var(--text-dark);
 }
 
-/* cartPane glass */
-#cartPane {
-  backdrop-filter: blur(calc(var(--blur) * 1.1));
-  background: var(--glass);
-  border-top: 1px solid #ffffff20;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.7);
-  transform: translateY(110%);
-  transition: transform 0.55s cubic-bezier(0.2, 0.75, 0.25, 1);
-}
-#cartPane.open {
-  transform: translateY(0);
-}
-#cartBtn.hide {
-  pointer-events: none;
-  opacity: 0;
-  transform: scale(0.4); /* rimpicciolisce durante il fade */
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
+/* ===============================================================
+   AR SCENE & FALLBACKS
+================================================================ */
+/* a-scene, #arjs-video, #modelHolder sono stati rimossi da test.html.
+   Le regole CSS sottostanti per questi elementi non sono più necessarie
+   se non per #fallback e #qrCanvas SE fossero ancora usati, ma sono stati rimossi.
+*/
 
-/* A-scene & video layout + click fix */
-#arjs-video {
+/* CSS per il nuovo canvas Three.js */
+#three-canvas {
   position: fixed;
   top: 0;
-  left: var(--sidebar-w);
-  width: calc(100% - var(--sidebar-w));
-  height: 100%;
-  object-fit: cover;
-  z-index: 0 !important;
-  pointer-events: none;
-  filter: brightness(0.88) contrast(1.15) saturate(1.1);
-}
-a-scene,
-a-scene canvas {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w);
-  width: calc(100% - var(--sidebar-w));
-  height: 100%;
-  pointer-events: none;
-  background: transparent !important;
-  z-index: 1;
+  /* left will be set by UIManager.handleResize */
+  /* width will be set by UIManager.handleResize */
+  height: 100%; /* Or set by UIManager.handleResize if height also changes */
+  transition: width 0.45s cubic-bezier(0.25, 0.8, 0.25, 1), left 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden; /* Crucial to prevent content spill during transition */
+  background-color: #333; /* Optional: so it's not transparent/showing old frames if there's a delay */
+  z-index: -2; /* Assicura che sia dietro a tutto, tranne forse il body background */
 }
 
-/* scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: #121318;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--accent-cold);
-  border-radius: 5px;
-}
-/* —— hamburger —— */
-#sidebarToggle {
-  position: fixed;
-  top: 18px;
-  left: 18px;
-  z-index: 9;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  font-size: 26px;
-  line-height: 38px;
-  text-align: center;
-  background: linear-gradient(135deg, #2d2f37, #1c1e25);
-  color: #f6f6f9;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 0 10px #000;
-  transition: background 0.3s, transform 0.3s;
-}
-#sidebarToggle:hover {
-  background: linear-gradient(135deg, var(--accent-cold), #006e8b);
-  transform: scale(1.05);
-}
+/*
+  La logica di posizionamento del canvas quando la sidebar è chiusa/aperta
+  è ora gestita da UIManager.js, che imposta dinamicamente
+  'left' e 'width' di #three-canvas. La transizione CSS qui sopra
+  renderà fluidi questi cambiamenti.
+*/
 
-/* ===== STATO COLLAPSED ===== */
-body.sidebar-collapsed #sidebar {
-  transform: translateX(-100%); /* sidebar fuori dallo schermo */
-}
-
-body.sidebar-collapsed #arjs-video,
-body.sidebar-collapsed a-scene,
-body.sidebar-collapsed a-scene canvas {
-  left: 0;
-  width: 100%; /* area video/scena a pieno schermo */
-}
-
-/* sposta cartBtn leggermente più a sinistra quando la sidebar è visibile */
-#cartBtn {
-  right: 26px;
-}
-body:not(.sidebar-collapsed) #cartBtn {
-  right: 26px;
-} /* uguale */
-/* se preferisci avvicinarlo al bordo scena quando la sidebar è aperta:
-   body.sidebar-collapsed #cartBtn{right:26px}
-   body:not(.sidebar-collapsed)   #cartBtn{right:26px}
-   (qui resta invariato) */
-
-/* ===== COLLASSO SIDEBAR ======================================= */
-
-/* 1) sidebar off-canvas */
-body.sidebar-closed #sidebar {
-  transform: translateX(-100%) !important; /* esci del tutto */
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* 2) area video a tutta larghezza (e linea ciano, se l’hai) */
-body.sidebar-closed #arjs-video,
-body.sidebar-closed a-scene,
-body.sidebar-closed a-scene canvas,
-body.sidebar-closed model-viewer {
-  left: 0 !important;
-  width: 100% !important;
-}
-body.sidebar-closed .vertical-divider {
-  opacity: 0;
-}
-
-/* === HAMBURGER che appare solo con sidebar chiusa =============== */
-#sidebarToggle {
-  position: fixed; /* compare in alto a sinistra */
-  top: 22px;
-  left: 22px;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  font-size: 26px;
-  background: #1b1d25;
-  color: var(--accent-cold);
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 0 10px var(--accent-cold);
-  z-index: 10; /* sopra tutto */
-  transition: transform 0.3s, opacity 0.3s, box-shadow 0.3s;
-}
-/* effetto hover */
-#sidebarToggle:hover {
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 0 14px var(--accent-cold), 0 0 24px var(--accent-cold);
-}
-
-/* quando la sidebar è visibile, il pulsante sparisce */
-body:not(.sidebar-closed) #sidebarToggle {
-  opacity: 0;
-  pointer-events: none;
+/* Esempio di media query per responsività generale */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-w: 280px; /* Sidebar più stretta su schermi piccoli */
+  }
+  .card button {
+    width: 100%; /* Bottoni a piena larghezza */
+    margin-right: 0;
+    margin-bottom: 5px;
+  }
+  .card button.showAR {
+    margin-right: 0;
+  }
+  #cartPane {
+    width: 100%; /* Carrello a pieno schermo */
+    right: -100%; /* Nascosto completamente */
+  }
 }
