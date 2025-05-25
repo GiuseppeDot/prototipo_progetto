@@ -15,7 +15,7 @@ window.addEventListener("DOMContentLoaded", () => {
     /* ⭐ Best Seller */
     {
       name: "Bruschetta",
-      file: "Bruschetta.glb",
+      file: "asset/Cibo.glb",
       price: 7.5,
       desc: "Pane croccante con pomodorini, basilico e olio EVO.",
       img: "./asset/bruschetta.jpg",
@@ -24,7 +24,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     {
       name: "Pizza Margherita",
-      file: "Margherita.glb",
+      file: "asset/Margherita.glb",
       price: 8.5,
       desc: "Classica con mozzarella e basilico.",
       img: "./asset/margherita.jpg",
@@ -34,7 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
     /* 🥣 Primi */
     {
       name: "Spaghetti Carbonara",
-      file: "Carbonara.glb",
+      file: "asset/Carbonara.glb",
       price: 11.0,
       desc: "Guanciale, pecorino e uovo.",
       img: "./asset/carbonara.jpg",
@@ -43,7 +43,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     {
       name: "Lasagne",
-      file: "Lasagne.glb",
+      file: "asset/Lasagne.glb",
       price: 12.0,
       desc: "Ragù, besciamella e parmigiano.",
       img: "./asset/lasagne.jpg",
@@ -53,7 +53,7 @@ window.addEventListener("DOMContentLoaded", () => {
     /* 🥩 Secondi */
     {
       name: "Tagliata di Manzo",
-      file: "Tagliata.glb",
+      file: "asset/Tagliata.glb",
       price: 17.0,
       desc: "Controfiletto con rucola e grana.",
       img: "./asset/tagliata.jpg",
@@ -62,7 +62,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     {
       name: "Salmone alla griglia",
-      file: "Salmone.glb",
+      file: "asset/Salmone.glb",
       price: 15.0,
       desc: "Filetto di salmone, salsa agrumi.",
       img: "./asset/salmone.jpg",
@@ -301,6 +301,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // Note: sceneEl is already defined above as: const sceneEl = qs("a-scene");
 
   marker.addEventListener("markerFound", () => {
+    console.log("Marker Found!"); // Added console log
     if (modelDetached) {
       sceneEl.object3D.remove(holder.object3D); // Remove from scene
       marker.object3D.add(holder.object3D); // Add back to marker
@@ -315,6 +316,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   marker.addEventListener("markerLost", () => {
+    console.log("Marker Lost."); // Added console log
     if (!modelDetached) {
       holder.object3D.updateMatrixWorld(); // Ensure matrix is up-to-date
       const p = new THREE.Vector3();
