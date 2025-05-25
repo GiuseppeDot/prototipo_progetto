@@ -103,8 +103,12 @@ window.addEventListener("DOMContentLoaded", () => {
   /* ---------- AR LOGIC (come funzionante in precedenza) ---------- */
   const STEP = 0.25;
   const holder = qs("#modelHolder");
-  let currSrc = null,
-    modelDetached = false;
+  const sceneEl = qs("a-scene"); // Get reference to the scene
+  let currSrc = null;
+  let modelDetached = false; // Re-introduce modelDetached
+  let isDragging = false;
+  let previousMouseX = 0;
+  let currentYRotation = 0;
 
   function setModel(src) {
     if (!src) return;
@@ -113,29 +117,64 @@ window.addEventListener("DOMContentLoaded", () => {
     holder.setAttribute("gltf-model", src);
     qs("#fallback").src = src;
   }
-  function applyRot() {
+  function setupModelOrientation() {
+    // Set fixed initial X rotation and position. Y rotation is set to 0 (neutral).
     holder.object3D.rotation.set(-Math.PI / 2, 0, 0);
+    holder.object3D.position.set(0, 0.25, 0); // Default position
   }
   holder.addEventListener("model-loaded", () => {
     holder.emit("fade", null, false);
-    applyRot();
-    loadPos(currSrc);
+    setupModelOrientation();
+    currentYRotation = 0; // Initialize interactive Y rotation
   });
 
-  function savePos() {
-    if (!currSrc) return;
-    localStorage.setItem(
-      "pos_" + currSrc,
-      JSON.stringify(holder.object3D.position)
-    );
-  }
-  function loadPos(src) {
-    const s = localStorage.getItem("pos_" + src);
-    if (s) {
-      const { x, y, z } = JSON.parse(s);
-      holder.object3D.position.set(x, y, z);
-    } else holder.object3D.position.set(-14.4, 9.6, -1.8);
-  }
+  /* === Mouse Drag Rotation Logic === */
+  sceneEl.addEventListener("mousedown", (event) => {
+    if (holder.getAttribute("visible") !== "true") return;
+    isDragging = true;
+    previousMouseX = event.clientX;
+    event.preventDefault();
+  });
+
+  sceneEl.addEventListener("mousemove", (event) => {
+    if (!isDragging || holder.getAttribute("visible") !== "true") return;
+    const currentMouseX = event.clientX;
+    const deltaX = currentMouseX - previousMouseX;
+    previousMouseX = currentMouseX;
+    const rotationFactor = 0.01; // Sensitivity factor
+    currentYRotation += deltaX * rotationFactor;
+    holder.object3D.rotation.set(-Math.PI / 2, currentYRotation, 0);
+  });
+
+  sceneEl.addEventListener("mouseup", () => {
+    isDragging = false;
+  });
+
+  // Touch events for mobile
+  sceneEl.addEventListener("touchstart", (event) => {
+    if (holder.getAttribute("visible") !== "true") return;
+    isDragging = true;
+    previousMouseX = event.touches[0].clientX;
+    event.preventDefault();
+  });
+
+  sceneEl.addEventListener("touchmove", (event) => {
+    if (!isDragging || holder.getAttribute("visible") !== "true") return;
+    const currentMouseX = event.touches[0].clientX;
+    const deltaX = currentMouseX - previousMouseX;
+    previousMouseX = currentMouseX;
+    const rotationFactor = 0.01; // Sensitivity factor
+    currentYRotation += deltaX * rotationFactor;
+    holder.object3D.rotation.set(-Math.PI / 2, currentYRotation, 0);
+  });
+
+  sceneEl.addEventListener("touchend", () => {
+    isDragging = false;
+  });
+  sceneEl.addEventListener("touchcancel", () => {
+    isDragging = false;
+  });
+
   /* === Toggle via <h2> "Menù 3D" ========================= */
   const sidebar = qs("#sidebar");
   const title = qs("#sidebar h2");
@@ -258,32 +297,37 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 400);
 
   /* ---------- MARKER detach/attach ---------- */
-  const marker = qs("a-marker"),
-    scene = qs("a-scene");
+  const marker = qs("a-marker");
+  // Note: sceneEl is already defined above as: const sceneEl = qs("a-scene");
+
   marker.addEventListener("markerFound", () => {
     if (modelDetached) {
-      scene.object3D.remove(holder.object3D);
-      marker.object3D.add(holder.object3D);
-      loadPos(currSrc);
-      applyRot();
+      sceneEl.object3D.remove(holder.object3D); // Remove from scene
+      marker.object3D.add(holder.object3D); // Add back to marker
+      setupModelOrientation(); // Reset position and X,Z rotation relative to marker, Y to 0
+      currentYRotation = 0; // Reset our tracking variable for interactive Y rotation
+      // Immediately apply the reset Y rotation to the model's actual rotation
+      holder.object3D.rotation.y = currentYRotation; // This directly sets Y, assuming X and Z are correctly set by setupModelOrientation
       modelDetached = false;
     }
+    // Ensure the model is visible in any case when marker is found.
     holder.setAttribute("visible", "true");
   });
+
   marker.addEventListener("markerLost", () => {
     if (!modelDetached) {
-      holder.object3D.updateMatrixWorld();
-      const p = new THREE.Vector3(),
-        q = new THREE.Quaternion();
+      holder.object3D.updateMatrixWorld(); // Ensure matrix is up-to-date
+      const p = new THREE.Vector3();
+      const q = new THREE.Quaternion();
       holder.object3D.getWorldPosition(p);
       holder.object3D.getWorldQuaternion(q);
       marker.object3D.remove(holder.object3D);
-      scene.object3D.add(holder.object3D);
+      sceneEl.object3D.add(holder.object3D);
       holder.object3D.position.copy(p);
       holder.object3D.quaternion.copy(q);
       modelDetached = true;
     }
-    holder.setAttribute("visible", "true");
+    holder.setAttribute("visible", "true"); // Ensure it remains visible
   });
 
   /* ---------- FALLBACK viewer se la camera non parte ---------- */
@@ -293,3 +337,4 @@ window.addEventListener("DOMContentLoaded", () => {
     fallback.style.display = "block";
   }, 6000);
 });
+console.log("sono qua");
