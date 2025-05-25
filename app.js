@@ -6,16 +6,11 @@ import { ARController } from "./ARController.js";
 import { DragController } from "./DragController.js";
 import { RotationController } from "./RotationController.js"; // Ensure this is imported
 
-const clock = new THREE.Clock(); // Added for deltaTime
+// const clock = new THREE.Clock(); // clock will be defined in startApp
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM fully loaded and parsed");
-
-  if (typeof THREEx === "undefined" || !THREEx.ArToolkitContext) {
-    console.error("AR.js (THREEx) for Three.js not loaded correctly.");
-  } else {
-    console.log("AR.js (THREEx) for Three.js appears to be loaded.");
-  }
+function startApp() {
+  console.log("Window fully loaded and application starting...");
+  const clock = new THREE.Clock(); // Moved clock definition here
 
   const threeCanvas = document.getElementById("three-canvas");
   if (!threeCanvas) {
@@ -23,18 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Actual renderer and camera will be initialized later, possibly in ARController.
-  // UIManager.init is designed to handle null for renderer/camera for now (it will log warnings).
-  // UIManager.init(null, null, threeCanvas);
-
-  // Further initializations for ARController, etc., will go here later.
-  // console.log("app.js: UIManager initialized."); // Commented out as it's called later
-
   // --- THREE.JS SCENE SETUP ---
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
     75,
-    window.innerWidth / window.innerHeight,
+    window.innerWidth / window.innerHeight, // Initial aspect ratio
     0.1,
     1000
   );
@@ -46,35 +34,48 @@ document.addEventListener("DOMContentLoaded", () => {
     antialias: true,
   });
   renderer.setPixelRatio(window.devicePixelRatio);
-  // Initial size, UIManager will adjust
+  // Initial size, UIManager will adjust later via handleResize
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // --- INITIALIZE MODULES ---
-  // UIManager needs renderer and camera for its handleResize, and now RotationController
-  RotationController.init(renderer); // Initialize RotationController
+  RotationController.init(renderer);
   console.log("app.js: RotationController initialized.");
 
-  UIManager.init(renderer, camera, threeCanvas, RotationController); // Pass RotationController
+  // UIManager.init will call handleResize, which sets initial canvas size based on sidebar state
+  UIManager.init(renderer, camera, threeCanvas, RotationController);
   console.log("app.js: UIManager initialized.");
-
-  ARController.init(scene, camera, renderer);
-  console.log("app.js: ARController initialized.");
 
   DragController.init(scene, camera, renderer);
   console.log("app.js: DragController initialized.");
 
+  // Direct AR Initialization (assuming THREEx is ready after window.onload)
+  if (typeof THREEx !== "undefined" && THREEx.ArToolkitContext) {
+    console.log(
+      "AR.js (THREEx) for Three.js appears to be loaded. Initializing AR system."
+    );
+    ARController.init(scene, camera, renderer);
+    console.log("app.js: ARController initialized.");
+  } else {
+    console.error(
+      "AR.js (THREEx) for Three.js not loaded correctly even after window.onload. AR features may not work."
+    );
+    // Optionally, display a message to the user in the UI or disable AR-specific UI elements
+  }
+
   // --- ANIMATION LOOP ---
   function animate() {
     requestAnimationFrame(animate);
-    const deltaTime = clock.getDelta(); // Get deltaTime
+    const deltaTime = clock.getDelta();
 
-    ARController.update(); // Update AR.js components (marker tracking)
-    RotationController.update(deltaTime); // Call update with deltaTime
-    // DragController.update(); // No per-frame update needed for DragController
+    ARController.update();
+    RotationController.update(deltaTime);
+    // DragController.update(); // No per-frame update needed
 
     renderer.render(scene, camera);
   }
 
   console.log("app.js: Starting animation loop.");
-  animate(); // Start the animation loop
-});
+  animate();
+}
+
+window.addEventListener("load", startApp);

@@ -29,7 +29,7 @@ function updateAR() {
   if (scene && camera) {
     renderer.render(scene, camera);
   }
-  requestAnimationFrame(updateAR); // This line is in the prompt, but it will create a
+  // requestAnimationFrame(updateAR); // This line is in the prompt, but it will create a
   // conflicting loop with app.js's animate function.
   // app.js's animate function is the preferred way to manage the loop.
   // This global function will not be called by app.js as per app.js's new code.

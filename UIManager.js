@@ -1,5 +1,6 @@
 // UIManager.js
 console.log("UIManager.js evaluating");
+import { ARController } from "./ARController.js";
 
 let rendererRef = null;
 let cameraRef = null;
@@ -142,6 +143,7 @@ export const UIManager = {
       cameraRef.aspect = newWidth / newHeight;
       cameraRef.updateProjectionMatrix();
       console.log("Three.js renderer and camera updated.");
+      ARController.onResize(); // Call ARController's onResize
     } else {
       console.warn(
         "Renderer or Camera not available in UIManager during handleResize. Dimensions logged only."
@@ -250,7 +252,7 @@ export const UIManager = {
 const menuData = [
   {
     name: "Bruschetta",
-    file: "Bruschetta.glb",
+    file: "Cibo.glb",
     price: 7.5,
     desc: "Pane croccante con pomodorini, basilico e olio EVO.",
     img: "./asset/bruschetta.jpg",
