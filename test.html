@@ -8,16 +8,15 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"
+          "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+          "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
         }
       }
     </script>
     <!-- <script src="https://jeromeetienne.github.io/AR.js/three.js/build/ar-threex.js"></script> -->
 
-    <!-- A-Frame and AR.js Libraries -->
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1/dist/jsQR.min.js"></script>
+    <!-- Re-enable for QR scanning -->
 
     <!-- THEME -->
     <link rel="stylesheet" href="test.css" />
@@ -67,13 +66,62 @@
       <button id="checkoutBtn">Checkout</button>
     </aside>
 
-    <!-- ===== A-FRAME SCENE ========================================== -->
+    <!-- ===== QR SCANNER UI ========================================== -->
+    <div
+      id="qrScannerUI"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      "
+    >
+      <p style="color: white; font-size: 1.2em; margin-bottom: 20px">
+        Scan QR Code to Start AR Experience
+      </p>
+      <video
+        id="qrVideoFeed"
+        playsinline
+        style="
+          width: 80%;
+          max-width: 400px;
+          height: auto;
+          border: 2px solid white;
+        "
+      ></video>
+      <canvas id="qrCanvas" style="display: none"></canvas>
+      <!-- For jsQR processing -->
+    </div>
+
+    <!-- ===== Placeholder for WebXR Button ============================ -->
+    <button
+      id="startXRButton"
+      style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+        display: none;
+      "
+    >
+      Start AR
+    </button>
+
+    <!-- ===== A-FRAME SCENE (Commented out) ========================================== -->
+    <!--
     <a-scene
       embedded
       arjs="sourceType: webcam; debugUIEnabled: true; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
     >
       <a-assets>
-        <canvas id="qrCanvas" style="display: none"></canvas>
+         -- qrCanvas was here, moved to qrScannerUI --
       </a-assets>
       <a-marker type="pattern" url="asset/markerQR.patt">
         <a-entity
@@ -88,6 +136,7 @@
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
+    -->
     <img
       id="fallback"
       src=""
@@ -120,6 +169,29 @@
     </button>
 
     <!-- ===== APP LOGIC ============================================= -->
+    <!-- Ensure app.js is loaded as a module if it uses ES6 imports -->
+    <script type="module" src="app.js"></script>
     <script src="test.js"></script>
+    <!-- Re-enable test.js for QR scanning logic -->
+
+    <!-- ===== AR STATUS MESSAGE UI =================================== -->
+    <div
+      id="arStatusMessage"
+      style="
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: none;
+        z-index: 2001;
+        font-family: sans-serif;
+        font-size: 0.9em;
+        text-align: center;
+      "
+    ></div>
   </body>
 </html>

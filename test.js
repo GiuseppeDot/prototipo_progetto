@@ -8,295 +8,172 @@
 window.addEventListener("DOMContentLoaded", () => {
   /* ---------- helper brevi ---------- */
   const qs = (sel, ctx = document) => ctx.querySelector(sel);
-  const qsa = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+  // const qsa = (sel, ctx = document) => [...ctx.querySelectorAll(sel)]; // qsa not used in this file anymore
 
-  /* ---------- MENU DATI (immagini + categorie) ---------- */
-  const menuData = [
-    /* ⭐ Best Seller */
-    {
-      name: "Bruschetta",
-      file: "asset/Cibo.glb",
-      price: 7.5,
-      desc: "Pane croccante con pomodorini, basilico e olio EVO.",
-      img: "./asset/bruschetta.jpg",
-      categoria: "bestseller",
-    },
+  /* 
+    All Menu Data, Rendering, Cart Logic, Sidebar Logic, 
+    and their associated event listeners have been moved to UIManager.js.
+    test.js will now focus only on QR Code scanning initialization and management.
+  */
 
-    {
-      name: "Pizza Margherita",
-      file: "asset/Margherita.glb",
-      price: 8.5,
-      desc: "Classica con mozzarella e basilico.",
-      img: "./asset/margherita.jpg",
-      categoria: "bestseller",
-    },
+  console.info("test.js: Initializing QR Scanner logic.");
 
-    /* 🥣 Primi */
-    {
-      name: "Spaghetti Carbonara",
-      file: "asset/Carbonara.glb",
-      price: 11.0,
-      desc: "Guanciale, pecorino e uovo.",
-      img: "./asset/carbonara.jpg",
-      categoria: "primo",
-    },
+  /* ---------- AR LOGIC (A-Frame specific - now removed/commented) ---------- */
+  // const STEP = 0.25; // Old
+  // const holder = qs("#modelHolder"); // Old A-Frame element
+  // const sceneEl = qs("a-scene"); // Old A-Frame element
+  // ... other A-Frame related variables and functions (setModel, setupModelOrientation, event listeners) removed ...
 
-    {
-      name: "Lasagne",
-      file: "asset/Lasagne.glb",
-      price: 12.0,
-      desc: "Ragù, besciamella e parmigiano.",
-      img: "./asset/lasagne.jpg",
-      categoria: "primo",
-    },
+  /* === Global Event Listeners (for .showAR, .addCart, etc.) === */
+  // These are now handled by UIManager.js through its own event listeners,
+  // typically set up during populateMenuItems or in setupEventHandlers.
+  // The old global click listener in test.js is removed to avoid duplication.
+  // document.addEventListener("click", (e) => { ... }); // REMOVED
 
-    /* 🥩 Secondi */
-    {
-      name: "Tagliata di Manzo",
-      file: "asset/Tagliata.glb",
-      price: 17.0,
-      desc: "Controfiletto con rucola e grana.",
-      img: "./asset/tagliata.jpg",
-      categoria: "secondo",
-    },
+  /* ---------- NEW QR SCANNER LOGIC FOR WEBXR ---------- */
+  const qrScannerUI = qs("#qrScannerUI");
+  const qrVideoFeed = qs("#qrVideoFeed");
+  const qrCanvas = qs("#qrCanvas");
+  const qrCanvasCtx = qrCanvas.getContext("2d");
+  let currentQRScanRequest = null; // To store the requestAnimationFrame id
+  let videoStream = null; // To store the MediaStream
 
-    {
-      name: "Salmone alla griglia",
-      file: "asset/Salmone.glb",
-      price: 15.0,
-      desc: "Filetto di salmone, salsa agrumi.",
-      img: "./asset/salmone.jpg",
-      categoria: "secondo",
-    },
-  ];
+  function startQRScanner() {
+    console.log("Attempting to start QR Scanner...");
+    window.UIManager?.showARStatusMessage(
+      "Scan a QR code to begin AR experience.",
+      0
+    );
 
-  /* ---------- RENDER LISTE ---------- */
-  const renderCard = (i) => `
-    <div class="card" id="card-${i.file}">
-      <img src="${i.img}" alt="${i.name}">
-      <h4>${i.name} – €${i.price.toFixed(2)}</h4>
-      <p>${i.desc}</p>
-      <button class="showAR"  data-src="${i.file}">Vedi in AR</button>
-      <button class="addCart" data-src="${i.file}">Aggiungi</button>
-    </div>`;
-
-  qs("#bestsellerList").innerHTML = menuData
-    .filter((i) => i.categoria === "bestseller")
-    .map(renderCard)
-    .join("");
-  qs("#primiList").innerHTML = menuData
-    .filter((i) => i.categoria === "primo")
-    .map(renderCard)
-    .join("");
-  qs("#secondiList").innerHTML = menuData
-    .filter((i) => i.categoria === "secondo")
-    .map(renderCard)
-    .join("");
-
-  /* ---------- LOG diagnostico ---------- */
-  console.info("Piatti caricati:", {
-    bestseller: qs("#bestsellerList").children.length,
-    primi: qs("#primiList").children.length,
-    secondi: qs("#secondiList").children.length,
-  });
-
-  /* ---------- AR LOGIC (come funzionante in precedenza) ---------- */
-  const STEP = 0.25;
-  const holder = qs("#modelHolder");
-  const sceneEl = qs("a-scene"); // Get reference to the scene
-  let currSrc = null;
-  let modelDetached = false; // Re-introduce modelDetached
-  let isDragging = false;
-  let previousMouseX = 0;
-  let currentYRotation = 0;
-
-  function setModel(src) {
-    if (!src) return;
-    currSrc = src;
-    holder.setAttribute("visible", "false");
-    holder.setAttribute("gltf-model", src);
-    qs("#fallback").src = src;
-  }
-  function setupModelOrientation() {
-    // Set fixed initial X rotation and position. Y rotation is set to 0 (neutral).
-    holder.object3D.rotation.set(-Math.PI / 2, 0, 0);
-    holder.object3D.position.set(0, 0.25, 0); // Default position
-  }
-  holder.addEventListener("model-loaded", () => {
-    holder.emit("fade", null, false);
-    setupModelOrientation();
-    currentYRotation = 0; // Initialize interactive Y rotation
-  });
-
-  /* === Mouse Drag Rotation Logic === */
-  sceneEl.addEventListener("mousedown", (event) => {
-    if (holder.getAttribute("visible") !== "true") return;
-    isDragging = true;
-    previousMouseX = event.clientX;
-    event.preventDefault();
-  });
-
-  sceneEl.addEventListener("mousemove", (event) => {
-    if (!isDragging || holder.getAttribute("visible") !== "true") return;
-    const currentMouseX = event.clientX;
-    const deltaX = currentMouseX - previousMouseX;
-    previousMouseX = currentMouseX;
-    const rotationFactor = 0.01; // Sensitivity factor
-    currentYRotation += deltaX * rotationFactor;
-    holder.object3D.rotation.set(-Math.PI / 2, currentYRotation, 0);
-  });
-
-  sceneEl.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
-
-  // Touch events for mobile
-  sceneEl.addEventListener("touchstart", (event) => {
-    if (holder.getAttribute("visible") !== "true") return;
-    isDragging = true;
-    previousMouseX = event.touches[0].clientX;
-    event.preventDefault();
-  });
-
-  sceneEl.addEventListener("touchmove", (event) => {
-    if (!isDragging || holder.getAttribute("visible") !== "true") return;
-    const currentMouseX = event.touches[0].clientX;
-    const deltaX = currentMouseX - previousMouseX;
-    previousMouseX = currentMouseX;
-    const rotationFactor = 0.01; // Sensitivity factor
-    currentYRotation += deltaX * rotationFactor;
-    holder.object3D.rotation.set(-Math.PI / 2, currentYRotation, 0);
-  });
-
-  sceneEl.addEventListener("touchend", () => {
-    isDragging = false;
-  });
-  sceneEl.addEventListener("touchcancel", () => {
-    isDragging = false;
-  });
-
-  /* === Toggle via <h2> "Menù 3D" ========================= */
-  const sidebar = qs("#sidebar");
-  const title = qs("#sidebar h2");
-
-  title.style.cursor = "pointer";
-  title.title = "Mostra / nascondi il menu";
-
-  const toggleSidebar = () => document.body.classList.toggle("sidebar-closed");
-
-  title.addEventListener("click", toggleSidebar);
-  qs("#sidebarToggle").addEventListener("click", toggleSidebar);
-
-  /* ---------- EVENTI GLOBALI (AR & CART) ---------- */
-  document.addEventListener("click", (e) => {
-    const b = e.target.closest("button");
-    if (!b) return;
-    if (b.classList.contains("showAR")) setModel(b.dataset.src);
-    if (b.classList.contains("addCart")) {
-      const item = menuData.find((m) => m.file === b.dataset.src);
-      //   cart.push(item);
-      updateCartUI(true);
-    }
-  });
-
-  /* ====== CART STATE ================================================ */
-  const cart = JSON.parse(localStorage.getItem("ARcart") || "[]");
-  const badge = qs("#badge");
-  const pane = qs("#cartPane");
-  const list = qs("#cartItems");
-  const total = qs("#cartTotal");
-
-  function updateCartUI(anim = false) {
-    badge.textContent = cart.length;
-    if (anim) {
-      badge.animate(
-        [
-          { transform: "scale(.8)" },
-          { transform: "scale(1.3)" },
-          { transform: "scale(1)" },
-        ],
-        { duration: 350, easing: "ease-out" }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error("getUserMedia is not supported in this browser.");
+      alert("Camera access is not supported in this browser.");
+      window.UIManager?.showARStatusMessage(
+        "Camera access not supported.",
+        5000
       );
+      return;
     }
-    list.innerHTML = cart
-      .map((i) => `<li>${i.name} – €${i.price.toFixed(2)}</li>`)
-      .join("");
-    total.textContent =
-      "Totale €" + cart.reduce((s, i) => s + i.price, 0).toFixed(2);
-    localStorage.setItem("ARcart", JSON.stringify(cart));
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: "environment" } })
+      .then(function (stream) {
+        videoStream = stream;
+        qrVideoFeed.srcObject = stream;
+        qrVideoFeed.onloadedmetadata = function (e) {
+          qrVideoFeed.play();
+          qrScannerUI.style.display = "flex";
+          qrCanvas.width = qrVideoFeed.videoWidth;
+          qrCanvas.height = qrVideoFeed.videoHeight;
+          console.log(
+            "QR Scanner UI visible, video playing. Canvas dimensions:",
+            qrCanvas.width,
+            qrCanvas.height
+          );
+          scanQRCode();
+        };
+      })
+      .catch(function (err) {
+        console.error("Error accessing camera: ", err);
+        alert(
+          "Could not access the camera. Please ensure permissions are granted."
+        );
+        qrScannerUI.style.display = "flex";
+        qs("#qrScannerUI p").textContent =
+          "Error accessing camera. Please check permissions.";
+        window.UIManager?.showARStatusMessage(
+          "Could not access camera. Check permissions.",
+          5000
+        );
+      });
   }
-  updateCartUI();
 
-  /* === TOGGLE CARRELLO ============================================ */
-  const cartBtn = qs("#cartBtn");
-
-  function openCart() {
-    pane.classList.add("open");
-    cartBtn.classList.add("hide"); // ① nasconde il FAB
-  }
-  function closeCart() {
-    pane.classList.remove("open");
-    cartBtn.classList.remove("hide"); // ② lo mostra di nuovo
-  }
-
-  cartBtn.onclick = openCart;
-  qs("#closeCart").onclick = closeCart;
-
-  /* ESC o click fuori area chiudono */
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeCart();
-  });
-  document.addEventListener("click", (e) => {
-    if (
-      pane.classList.contains("open") &&
-      !pane.contains(e.target) &&
-      e.target !== cartBtn
-    ) {
-      closeCart();
+  function stopQRScanner() {
+    console.log("Stopping QR Scanner...");
+    if (currentQRScanRequest) {
+      cancelAnimationFrame(currentQRScanRequest);
+      currentQRScanRequest = null;
     }
-  });
-
-  /* —— cart operations —— */
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("addCart")) {
-      const item = menuData.find((m) => m.file === e.target.dataset.src);
-      cart.push(item);
-      updateCartUI(true);
+    if (videoStream) {
+      videoStream.getTracks().forEach((track) => track.stop());
+      videoStream = null;
     }
-  });
-  qs("#clearCart").onclick = () => {
-    cart.length = 0;
-    updateCartUI();
-  };
-  qs("#checkoutBtn").onclick = () =>
-    alert("Grazie! Funzione checkout da implementare.");
+    qrVideoFeed.srcObject = null;
+    if (qrScannerUI) {
+      // Check if qrScannerUI exists, it might be null if called during page unload
+      qrScannerUI.style.display = "none";
+    }
+    console.log("QR Scanner stopped, UI hidden.");
+  }
 
-  /* ---------- QR SCAN (rimasto invariato) ---------- */
-  const canv = qs("#qrCanvas"),
-    ctx = canv.getContext("2d");
-  let lastQR = "";
-  const qrInit = setInterval(() => {
-    const vid = qs("#arjs-video");
-    if (!vid || !vid.videoWidth) return;
-    clearInterval(qrInit);
-    canv.width = vid.videoWidth;
-    canv.height = vid.videoHeight;
-    (function scan() {
-      ctx.drawImage(vid, 0, 0, canv.width, canv.height);
-      const code = jsQR(
-        ctx.getImageData(0, 0, canv.width, canv.height).data,
-        canv.width,
-        canv.height
-      );
-      if (code && code.data !== lastQR) {
-        lastQR = code.data.trim();
-        if (lastQR.toLowerCase().endsWith(".glb")) setModel(lastQR);
+  function scanQRCode() {
+    if (qrVideoFeed.readyState === qrVideoFeed.HAVE_ENOUGH_DATA) {
+      // Ensure canvas is same size as video display size, in case it changed
+      if (qrCanvas.width !== qrVideoFeed.videoWidth)
+        qrCanvas.width = qrVideoFeed.videoWidth;
+      if (qrCanvas.height !== qrVideoFeed.videoHeight)
+        qrCanvas.height = qrVideoFeed.videoHeight;
+
+      qrCanvasCtx.drawImage(qrVideoFeed, 0, 0, qrCanvas.width, qrCanvas.height);
+      try {
+        const code = jsQR(
+          qrCanvasCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height).data,
+          qrCanvas.width,
+          qrCanvas.height,
+          {
+            inversionAttempts: "dontInvert",
+          }
+        );
+
+        if (code && code.data) {
+          console.log("QR Code detected:", code.data);
+          // For now, any QR code is valid.
+          // TODO: Implement specific QR code payload validation if needed.
+          // e.g. if (code.data.startsWith("https://myar.app/experience?id="))
+
+          stopQRScanner();
+
+          // Call WebXRManager to enable the Start AR button
+          // Assuming WebXRManager is exposed on the window object by app.js
+          if (
+            window.WebXRManager &&
+            typeof window.WebXRManager.prepareForXRSession === "function"
+          ) {
+            window.WebXRManager.prepareForXRSession();
+            // Optionally, pass QR code data: window.WebXRManager.prepareForXRSession(code.data);
+          } else {
+            console.error(
+              "WebXRManager.prepareForXRSession() not found. Cannot proceed to AR."
+            );
+            // alert("Error: AR system is not ready. Please reload."); // Replaced by UIManager message
+            window.UIManager?.showARStatusMessage(
+              "Error: AR system not ready. Please refresh and try again.",
+              0
+            );
+          }
+          return; // Exit scan loop
+        }
+      } catch (err) {
+        console.error("Error during QR scan:", err);
+        // Continue scanning
       }
-      requestAnimationFrame(scan);
-    })();
-  }, 400);
+    }
+    currentQRScanRequest = requestAnimationFrame(scanQRCode);
+  }
 
-  /* ---------- MARKER detach/attach ---------- */
+  // Expose restartQRScanning to be called from WebXRManager
+  window.restartQRScanning = function () {
+    console.log("window.restartQRScanning called.");
+    // Potentially reset any stored QR data here if necessary
+    qs("#qrScannerUI p").textContent = "Scan QR Code to Start AR Experience"; // Reset message
+    startQRScanner();
+  };
+
+  // Initial start of QR scanning when page is ready
+  startQRScanner();
+
+  /* ---------- OLD AR.js MARKER LOGIC (Commented out / To be removed) ---------- */
+  /*
   const marker = qs("a-marker");
   // Note: sceneEl is already defined above as: const sceneEl = qs("a-scene");
 
@@ -331,12 +208,15 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     holder.setAttribute("visible", "true"); // Ensure it remains visible
   });
+  */
 
-  /* ---------- FALLBACK viewer se la camera non parte ---------- */
+  /* ---------- OLD FALLBACK viewer (Commented out / To be removed) ---------- */
+  /*
   const fallback = qs("#fallback");
   window.addEventListener("arjs-video-loaded", () => clearTimeout(fbTO));
   const fbTO = setTimeout(() => {
     fallback.style.display = "block";
   }, 6000);
+  */
 });
-console.log("sono qua");
+// console.log("sono qua"); // This log might be outside DOMContentLoaded, check if intended

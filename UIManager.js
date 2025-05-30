@@ -16,6 +16,8 @@ function getSidebarWidth() {
 }
 
 export const UIManager = {
+  selectedModelUrl: null, // Added to store the selected model URL
+
   init(threeRenderer, threeCamera, canvasElement, rotationControllerInstance) {
     // Added rotationControllerInstance
     rendererRef = threeRenderer;
@@ -95,6 +97,23 @@ export const UIManager = {
     // Listen for window resize events for general responsiveness
     window.addEventListener("resize", () => this.handleResize());
 
+    // Add event listener for .showAR buttons
+    // Using document as the event root for simplicity, assuming cards are dynamically added.
+    document.addEventListener("click", (e) => {
+      const showARButton = e.target.closest(".showAR");
+      if (showARButton && showARButton.dataset.src) {
+        this.setSelectedModelUrl(showARButton.dataset.src);
+        // IMPORTANT: Ensure no old model loading logic is triggered here.
+        // This click should only set the URL. The actual AR/model loading
+        // will be handled by WebXRManager after QR scan and tap.
+        console.log(".showAR button clicked, model URL set via UIManager.");
+
+        // Optional: Provide user feedback that model is selected for AR.
+        // For example, briefly highlight the button or show a message.
+        // Or, rely on the next step which is typically starting the QR/AR flow.
+      }
+    });
+
     // Setup Auto-Rotate Button Listener
     const autoRotateButton = document.getElementById("autoRotateBtn");
     if (autoRotateButton && rotationControllerRef) {
@@ -143,7 +162,7 @@ export const UIManager = {
       cameraRef.aspect = newWidth / newHeight;
       cameraRef.updateProjectionMatrix();
       console.log("Three.js renderer and camera updated.");
-      ARController.onResize(); // Call ARController's onResize
+      // ARController.onResize(); // ARController is largely unused with WebXR, consider removing this call.
     } else {
       console.warn(
         "Renderer or Camera not available in UIManager during handleResize. Dimensions logged only."
@@ -246,6 +265,56 @@ export const UIManager = {
     if (cartPane) cartPane.classList.remove("open");
     if (cartBtn) cartBtn.classList.remove("hide");
   },
+
+  // Methods for model URL management
+  setSelectedModelUrl(url) {
+    this.selectedModelUrl = url;
+    console.log("UIManager: Selected model URL set to", url);
+    // Potentially add visual feedback here
+  },
+
+  getSelectedModelUrl() {
+    console.log(
+      "UIManager: getSelectedModelUrl called, returning",
+      this.selectedModelUrl
+    );
+    return this.selectedModelUrl;
+  },
+
+  // --- AR Status Message Functions ---
+  showARStatusMessage(message, duration = 3000) {
+    const feedbackElement = document.getElementById("arStatusMessage");
+    if (feedbackElement) {
+      feedbackElement.textContent = message;
+      feedbackElement.style.display = "block";
+
+      // Clear existing timeout if any
+      if (this.statusMessageTimeout) {
+        clearTimeout(this.statusMessageTimeout);
+      }
+
+      if (duration > 0) {
+        this.statusMessageTimeout = setTimeout(() => {
+          feedbackElement.style.display = "none";
+          this.statusMessageTimeout = null;
+        }, duration);
+      }
+    } else {
+      console.warn("arStatusMessage element not found in DOM.");
+    }
+  },
+
+  hideARStatusMessage() {
+    const feedbackElement = document.getElementById("arStatusMessage");
+    if (feedbackElement) {
+      feedbackElement.style.display = "none";
+    }
+    if (this.statusMessageTimeout) {
+      clearTimeout(this.statusMessageTimeout);
+      this.statusMessageTimeout = null;
+    }
+  },
+  statusMessageTimeout: null, // Variable to hold the timeout ID
 };
 
 // Menu Data (copied from test.js - this might be better managed elsewhere in a real app)

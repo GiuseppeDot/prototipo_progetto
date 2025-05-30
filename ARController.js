@@ -1,17 +1,17 @@
 // ARController.js
 console.log("ARController.js evaluating");
 import * as THREE from "three";
-import { DragController } from "./DragController.js"; // Added import
+// import { DragController } from "./DragController.js"; // Added import - Commented out for isolation
 // THREEx will be a global from the ar-threex.js script
 
 let scene = null;
 let camera = null;
 let renderer = null;
-let arToolkitSource = null;
-let arToolkitContext = null;
-let markerRoot = null; // This will be the Three.js group associated with the marker
+// let arToolkitSource = null; // Commented out for WebXR
+// let arToolkitContext = null; // Commented out for WebXR
+// let markerRoot = null; // Commented out for WebXR
 let placeholderModel = null; // A simple THREE.Mesh
-let modelHasBeenPlaced = false; // New variable
+let modelHasBeenPlaced = false; // New variable - may be repurposed for WebXR context
 
 // Function to be called from the main animation loop in app.js
 // The prompt for app.js correctly defines an 'animate' function that calls requestAnimationFrame(animate),
@@ -19,6 +19,7 @@ let modelHasBeenPlaced = false; // New variable
 // This global 'updateAR' function, especially its requestAnimationFrame(updateAR) call,
 // would create a conflicting animation loop. It should not be used if app.js manages the loop.
 // The ARController.update() method (in the exported object) is what app.js will call.
+/*
 function updateAR() {
   if (arToolkitSource && arToolkitSource.ready !== false) {
     arToolkitSource.copySizeTo(renderer.domElement);
@@ -34,15 +35,17 @@ function updateAR() {
   // app.js's animate function is the preferred way to manage the loop.
   // This global function will not be called by app.js as per app.js's new code.
 }
+*/
 
 export const ARController = {
   init(threeScene, threeCamera, threeRenderer) {
-    console.log("ARController.init called");
+    console.log("ARController.init called - Modified for WebXR");
     scene = threeScene;
     camera = threeCamera;
     renderer = threeRenderer;
 
-    // Initialize AR Toolkit Source (Webcam)
+    // Initialize AR Toolkit Source (Webcam) - Commented out for WebXR
+    /*
     arToolkitSource = new THREEx.ArToolkitSource({
       sourceType: "webcam",
     });
@@ -59,8 +62,10 @@ export const ARController = {
         );
       }, 500); // Delay may need adjustment
     });
+    */
 
-    // Initialize AR Toolkit Context (Marker Detection Engine)
+    // Initialize AR Toolkit Context (Marker Detection Engine) - Commented out for WebXR
+    /*
     arToolkitContext = new THREEx.ArToolkitContext({
       cameraParametersUrl:
         THREEx.ArToolkitContext.baseURL + "../data/data/camera_para.dat", // Default camera parameters
@@ -75,8 +80,10 @@ export const ARController = {
         "ARController: AR Toolkit Context initialized, camera projection matrix set."
       );
     });
+    */
 
-    // Initialize Marker Root and Controls
+    // Initialize Marker Root and Controls - Commented out for WebXR
+    /*
     markerRoot = new THREE.Group();
     scene.add(markerRoot);
 
@@ -85,8 +92,10 @@ export const ARController = {
       patternUrl: "./markerQR.patt", // Path relative to the HTML file (test.html)
       changeMatrixMode: "cameraTransformMatrix", // Recommended for AR
     });
+    */
 
     // Create a placeholder model (e.g., a cube)
+    // This might be repurposed for placing objects in WebXR
     const geometry = new THREE.BoxGeometry(1, 1, 1); // Size 1x1x1 units
     const material = new THREE.MeshNormalMaterial({
       transparent: true,
@@ -95,11 +104,11 @@ export const ARController = {
     placeholderModel = new THREE.Mesh(geometry, material);
     // placeholderModel.position.y = 0.5; // Initial position will be set on first marker detection
     scene.add(placeholderModel); // Add to main scene
-    placeholderModel.visible = false; // Initially invisible
-    DragController.setDraggableModel(placeholderModel);
+    placeholderModel.visible = false; // Initially invisible - will be managed by WebXR interactions later
+    // DragController.setDraggableModel(placeholderModel); // Commented out as DragController import is removed
     // RotationController.setRotatableModel(placeholderModel); // Assuming RotationController is also integrated
 
-    // Add lighting
+    // Add lighting - this is fine to keep
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -107,13 +116,15 @@ export const ARController = {
     scene.add(directionalLight);
 
     console.log(
-      "ARController initialized with THREEx AR.js components. Placeholder model added."
+      "ARController initialized (modified for WebXR). Placeholder model added."
     );
   },
 
   onResize() {
     // This function is primarily for AR.js internals to react to video stream dimension changes.
     // UIManager.handleResize is responsible for the main canvas's visible size and aspect ratio.
+    // Commented out AR.js specific parts
+    /*
     if (arToolkitSource && arToolkitSource.ready) {
       arToolkitSource.onResizeElement(); // Let AR.js adjust the video element style if it needs to.
       arToolkitSource.copySizeTo(renderer.domElement);
@@ -132,18 +143,24 @@ export const ARController = {
         );
       }
     }
+    */
+    console.log(
+      "ARController.onResize called - AR.js specific logic commented out."
+    );
   },
 
   update() {
-    // Existing ARToolkit update
+    // Existing ARToolkit update - Commented out for WebXR
+    /*
     if (arToolkitSource && arToolkitSource.ready !== false) {
       if (arToolkitContext) {
         arToolkitContext.update(arToolkitSource.domElement);
         // This updates markerRoot.visible and its transform based on marker detection
       }
     }
-
-    // New logic for initial model placement
+    */
+    // New logic for initial model placement - Commented out or to be adapted for WebXR
+    /*
     if (markerRoot && camera && placeholderModel) {
       // Ensure all are initialized
       if (markerRoot.visible) {
@@ -175,5 +192,8 @@ export const ARController = {
         // If different behavior is needed (e.g., hide model), it would go here.
       }
     }
+    */
+    // console.log("ARController.update called - AR.js specific logic commented out.");
+    // The placeholderModel visibility and placement will be handled by WebXR logic (e.g., hit-test)
   },
 };
