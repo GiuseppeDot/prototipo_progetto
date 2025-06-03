@@ -113,6 +113,10 @@ const WebXRManager = {
       return;
     }
 
+    if (window.UIManager) {
+      window.UIManager.hideReselectSurfaceButton(); // Ensure it's hidden initially when session starts
+    }
+
     if (navigator.xr) {
       try {
         // Request an immersive-ar session.
@@ -129,6 +133,9 @@ const WebXRManager = {
 
         // Set up the WebGL layer for Three.js
         await renderer.xr.setSession(xrSession);
+        if (window.UIManager) {
+          window.UIManager.enterARMode();
+        }
 
         // Get the reference space
         // Using 'local' reference space for hit-testing, assuming it's a floor-level or bounded space.
@@ -241,6 +248,9 @@ const WebXRManager = {
   },
 
   onXRSessionEnded() {
+    if (window.UIManager) {
+      window.UIManager.exitARMode();
+    }
     xrSession = null;
     if (renderer.xr) renderer.xr.setSession(null);
     console.log("WebXR session ended.");
@@ -252,6 +262,9 @@ const WebXRManager = {
     }
     if (reticle) {
       reticle.visible = true;
+    }
+    if (window.UIManager) {
+      window.UIManager.hideReselectSurfaceButton(); // Ensure it's hidden when session ends
     }
     window.UIManager?.showARStatusMessage("AR Session Ended.", 3000);
     if (currentModel) {
@@ -317,15 +330,23 @@ const WebXRManager = {
 
     // Handle hit-testing for reticle visibility if not interacting and no model placed yet,
     // or if a model is placed but we want reticle for new placement (requires currentModel to be nullified first)
-    if (frame && hitTestSource && xrReferenceSpace && !currentModel) {
-      // Only show reticle if no model is placed
+    // The activeInputSource check is to prevent reticle showing during drag/rotate.
+    if (
+      frame &&
+      hitTestSource &&
+      xrReferenceSpace &&
+      !currentModel &&
+      !activeInputSource
+    ) {
       const hitTestResults = frame.getHitTestResults(hitTestSource);
       if (hitTestResults.length > 0) {
         const hit = hitTestResults[0];
         const pose = hit.getPose(xrReferenceSpace);
         if (reticle && pose) {
-          reticle.matrix.fromArray(pose.transform.matrix);
           reticle.visible = true;
+          reticle.matrix.fromArray(pose.transform.matrix);
+          reticle.material.color.set(0x00ff00); // Set to GREEN when surface is detected
+
           if (!reticleHasShownSurfaceMessage) {
             window.UIManager?.showARStatusMessage(
               "Surface detected. Tap to place model.",
@@ -335,13 +356,22 @@ const WebXRManager = {
           }
         }
       } else {
-        if (reticle) reticle.visible = false;
+        if (reticle) {
+          reticle.visible = false;
+          reticle.material.color.set(0xffffff); // Reset to WHITE when no surface
+        }
         // If surface is lost, allow the message to show again when a new surface is found
-        // reticleHasShownSurfaceMessage = false; // Or manage this more carefully
+        // Consider if this should be here or when reticle becomes visible again.
+        // For now, this means message shows once per "reticle visible" sequence.
+        // reticleHasShownSurfaceMessage = false;
       }
     } else if (reticle) {
-      // If conditions for hit-testing aren't met (e.g., model is placed)
+      // If conditions for hit-testing aren't met (e.g., model is placed or interaction ongoing)
       reticle.visible = false;
+      if (!activeInputSource && !currentModel) {
+        // Only reset color if not hidden due to interaction or placed model
+        reticle.material.color.set(0xffffff); // Reset to WHITE
+      }
     }
   },
 
@@ -412,12 +442,118 @@ const WebXRManager = {
           window.RotationController.setRotatableModel(currentModel);
           console.log("WebXRManager: Model set as rotatable.");
         }
+
+        if (window.UIManager) {
+          window.UIManager.showReselectSurfaceButton(); // Show button after model is placed
+        }
       },
       undefined,
       (error) => {
         console.error("Error loading GLTF model in WebXRManager:", error);
       }
     );
+  },
+
+  clearPlacedModelAndReselectSurface() {
+    console.log("WebXRManager: Clearing placed model and reselecting surface.");
+    if (currentModel) {
+      // Use this.currentModel if it's part of the object scope, or ensure currentModel is accessible
+      this.scene.remove(currentModel); // Assuming this.scene is valid
+      // TODO: Dispose of geometry/materials if this.currentModel won't be reused
+      currentModel = null;
+    }
+    if (reticle) {
+      reticle.visible = true;
+      reticle.material.color.set(0xffffff); // Reset color to white for new search
+    }
+    reticleHasShownSurfaceMessage = false;
+
+    // Inform the user
+    if (
+      window.UIManager &&
+      typeof window.UIManager.showARStatusMessage === "function"
+    ) {
+      window.UIManager.showARStatusMessage(
+        "Point at a new surface to place the model.",
+        4000
+      );
+    }
+
+    // Hide the reselect button as we are now in "selection" mode
+    if (window.UIManager) {
+      window.UIManager.hideReselectSurfaceButton();
+    }
+  },
+
+  hotSwapPlacedModel(newModelFileName) {
+    if (!renderer.xr.isPresenting) {
+      // Check if in an active XR session
+      console.warn(
+        "WebXRManager.hotSwapPlacedModel: Not in an active XR session. Model selection will apply on next placement."
+      );
+      // UIManager.setSelectedModelUrl has already been called.
+      // Inform user that next placement will use the new model.
+      if (
+        window.UIManager &&
+        typeof window.UIManager.showARStatusMessage === "function"
+      ) {
+        window.UIManager.showARStatusMessage(
+          `${newModelFileName.replace(
+            ".glb",
+            ""
+          )} selected. Tap surface to place.`,
+          3000
+        );
+      }
+      return;
+    }
+
+    const newModelUrl = "./asset/" + newModelFileName; // Prepend path
+    console.log("WebXRManager: Hot-swapping model to:", newModelUrl);
+
+    if (currentModel) {
+      // If a model is currently placed, save its transformation matrix
+      const previousMatrix = currentModel.matrix.clone();
+
+      // Remove the old model
+      this.scene.remove(currentModel);
+      // Consider proper disposal of old model's geometry/material here
+      currentModel = null;
+
+      // Call placeModel with the new URL and the previous model's matrix
+      this.placeModel(newModelUrl, previousMatrix);
+
+      if (
+        window.UIManager &&
+        typeof window.UIManager.showARStatusMessage === "function"
+      ) {
+        window.UIManager.showARStatusMessage(
+          `Changed model to ${newModelFileName.replace(".glb", "")}!`,
+          3000
+        );
+      }
+    } else {
+      // If no model is currently placed, UIManager.setSelectedModelUrl has already updated the next model.
+      // The user can then tap to place it using the normal placement flow.
+      if (
+        window.UIManager &&
+        typeof window.UIManager.showARStatusMessage === "function"
+      ) {
+        window.UIManager.showARStatusMessage(
+          `${newModelFileName.replace(
+            ".glb",
+            ""
+          )} selected. Tap surface to place.`,
+          3000
+        );
+      }
+      // Ensure reticle is visible if no model is placed, so user can place the newly selected one
+      if (reticle) {
+        reticle.visible = true;
+        reticle.material.color.set(0xffffff); // Ensure it's white for searching
+      }
+      reticleHasShownSurfaceMessage = false; // Allow surface detected message again
+    }
   },
 };
 

@@ -102,15 +102,26 @@ export const UIManager = {
     document.addEventListener("click", (e) => {
       const showARButton = e.target.closest(".showAR");
       if (showARButton && showARButton.dataset.src) {
-        this.setSelectedModelUrl(showARButton.dataset.src);
-        // IMPORTANT: Ensure no old model loading logic is triggered here.
-        // This click should only set the URL. The actual AR/model loading
-        // will be handled by WebXRManager after QR scan and tap.
-        console.log(".showAR button clicked, model URL set via UIManager.");
+        const itemFile = showARButton.dataset.src;
+        this.setSelectedModelUrl(itemFile);
+        console.log(".showAR button clicked, model URL set to:", itemFile);
 
-        // Optional: Provide user feedback that model is selected for AR.
-        // For example, briefly highlight the button or show a message.
-        // Or, rely on the next step which is typically starting the QR/AR flow.
+        if (document.body.classList.contains("ar-active")) {
+          if (
+            window.WebXRManager &&
+            typeof window.WebXRManager.hotSwapPlacedModel === "function"
+          ) {
+            // itemFile is just the filename, e.g., "Cibo.glb"
+            // WebXRManager.hotSwapPlacedModel will prepend "./asset/"
+            window.WebXRManager.hotSwapPlacedModel(itemFile);
+          } else {
+            console.error(
+              "WebXRManager.hotSwapPlacedModel not found while in AR mode."
+            );
+          }
+        }
+        // If not in AR mode, simply selecting the model URL is enough.
+        // The normal flow (QR scan -> Start AR -> Tap to place) will use the new URL.
       }
     });
 
@@ -125,11 +136,52 @@ export const UIManager = {
         "RotationController instance not provided to UIManager for auto-rotate button."
       );
     }
+
+    // Event listener for the new AR sidebar toggle button
+    const arSidebarToggleBtn = document.getElementById("arSidebarToggle");
+    if (arSidebarToggleBtn) {
+      arSidebarToggleBtn.addEventListener("click", () =>
+        this.toggleSidebarAR()
+      );
+    }
+
+    // Event listener for the AR Reselect Surface button
+    const reselectBtn = document.getElementById("arReselectSurfaceBtn");
+    if (reselectBtn) {
+      reselectBtn.addEventListener("click", () => {
+        if (
+          window.WebXRManager &&
+          typeof window.WebXRManager.clearPlacedModelAndReselectSurface ===
+            "function"
+        ) {
+          window.WebXRManager.clearPlacedModelAndReselectSurface();
+        } else {
+          console.error(
+            "WebXRManager.clearPlacedModelAndReselectSurface not found."
+          );
+        }
+      });
+    }
   },
 
   toggleSidebar() {
+    // This is the original toggle, potentially for the main button outside AR mode
+    // or the title click.
+    // Ensure it doesn't conflict or behave unexpectedly if called during AR mode.
+    // For now, it uses the same class 'sidebar-closed'.
     document.body.classList.toggle("sidebar-closed");
-    console.log("Sidebar toggled. Body classList:", document.body.className);
+    console.log(
+      "Main Sidebar toggled. Body classList:",
+      document.body.className
+    );
+    // Crucially, trigger a resize update for Three.js scene
+    this.handleResize();
+  },
+
+  toggleSidebarAR() {
+    // This method is specifically for the button *inside* the AR-mode sidebar
+    document.body.classList.toggle("sidebar-closed");
+    console.log("AR Sidebar toggled. Body classList:", document.body.className);
     // Crucially, trigger a resize update for Three.js scene
     this.handleResize();
   },
@@ -315,6 +367,53 @@ export const UIManager = {
     }
   },
   statusMessageTimeout: null, // Variable to hold the timeout ID
+
+  enterARMode() {
+    console.log("UIManager: Entering AR Mode");
+    document.body.classList.add("ar-active");
+
+    // Hide QR Scanner UI specifically if it's managed here or globally accessible
+    // WebXRManager already handles this, but good to ensure.
+    const qrScannerUI = document.getElementById("qrScannerUI");
+    if (qrScannerUI) {
+      qrScannerUI.style.display = "none";
+    }
+
+    // Call handleResize to adjust canvas for AR mode (e.g., if sidebar state affects it)
+    // The CSS for .ar-active #three-canvas will also apply.
+    this.handleResize();
+    this.hideReselectSurfaceButton(); // Ensure it's hidden when entering AR mode initially
+    // Hide other non-essential UI elements via CSS by the .ar-active class on body.
+  },
+
+  exitARMode() {
+    console.log("UIManager: Exiting AR Mode");
+    document.body.classList.remove("ar-active");
+    // If sidebar was closed in AR, ensure it's open by default when exiting AR.
+    // Or, preserve its state - for now, let's ensure it's open or user can open it.
+    // document.body.classList.remove('sidebar-closed'); // Optional: force sidebar open on exit
+    this.hideReselectSurfaceButton(); // Ensure it's hidden when exiting AR mode
+
+    // Call handleResize to restore canvas to normal mode layout
+    this.handleResize();
+    // QR Scanner UI visibility is typically handled by test.js when AR session ends
+    // and restartQRScanning() is called.
+  },
+
+  showReselectSurfaceButton() {
+    const btn = document.getElementById("arReselectSurfaceBtn");
+    if (btn && document.body.classList.contains("ar-active")) {
+      // Only show if in AR mode
+      btn.style.display = "block";
+    }
+  },
+
+  hideReselectSurfaceButton() {
+    const btn = document.getElementById("arReselectSurfaceBtn");
+    if (btn) {
+      btn.style.display = "none";
+    }
+  },
 };
 
 // Menu Data (copied from test.js - this might be better managed elsewhere in a real app)

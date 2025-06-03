@@ -23,11 +23,21 @@
   </head>
 
   <body>
+    <canvas id="three-canvas"></canvas>
+
     <!-- Pulsante per riaprire il menu quando è chiuso -->
     <button id="sidebarToggle" aria-label="Apri menu">☰</button>
 
     <!-- ===== SIDEBAR ================================================= -->
     <div id="sidebar">
+      <button
+        id="arSidebarToggle"
+        aria-label="Toggle AR Menu"
+        style="display: none"
+      >
+        ☰
+      </button>
+      <!-- New Button, initially hidden, styled by CSS -->
       <h2>L'ipotetico</h2>
 
       <details open>
@@ -193,5 +203,10 @@
         text-align: center;
       "
     ></div>
+
+    <!-- AR Surface Reselection Button -->
+    <button id="arReselectSurfaceBtn" style="display: none">
+      Reselect Surface
+    </button>
   </body>
 </html>

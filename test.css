@@ -398,6 +398,143 @@ body.sidebar-closed #sidebar {
   pointer-events: none;
 }
 
+/* ===== AR MODE STYLES ===== */
+/* Default state: non-essential UI elements are visible */
+
+/* In AR Mode: */
+.ar-active #qrScannerUI {
+  /* Ensure QR scanner is hidden if not already by JS */
+  display: none !important;
+}
+
+/* Example: Hide a hypothetical header/footer if they exist */
+/* .ar-active #main-header,
+   .ar-active #main-footer {
+     display: none;
+   } */
+
+/* 
+  Canvas takes up space. UIManager.handleResize will fine-tune it based on sidebar.
+  When ar-active, UIManager.handleResize should be called by enterARMode
+  to ensure the canvas is positioned correctly, potentially full screen if sidebar is closed.
+*/
+.ar-active #three-canvas {
+  /* 
+      UIManager.handleResize sets width, height, and left position.
+      These !important rules might override UIManager if not careful.
+      The goal is for the canvas to be the main view in AR.
+      Let's ensure it's at least positioned fixed and takes full viewport height.
+      Width and left will be managed by UIManager.handleResize.
+    */
+  position: fixed !important;
+  top: 0 !important;
+  /* left: 0 !important; */ /* UIManager handles left based on sidebar */
+  /* width: 100% !important; */ /* UIManager handles width based on sidebar */
+  height: 100vh !important; /* Use vh for full viewport height */
+  z-index: 1 !important; /* Ensure it's behind UI like sidebar/cart but above page content */
+  background: transparent !important; /* Ensure canvas itself is transparent for AR camera passthrough */
+}
+
+/* 
+  Sidebar (#sidebar, z-index: 5) and Cart button (#cartBtn, z-index: 8) 
+  and AR Status Message (#arStatusMessage, z-index: 2001)
+  should remain visible due to their existing z-index or specific styling.
+  The Hamburger menu (#sidebarToggle, z-index: 9 or 10) should also remain visible.
+  If other specific elements need to be hidden, add rules for them.
+  For example, the main product cards could be hidden if they are not part of the AR view.
+*/
+/* 
+.ar-active .card-container-class {
+    display: none;
+} 
+*/
+
+/* The auto-rotate button might be irrelevant in AR mode */
+.ar-active #autoRotateBtn {
+  display: none !important;
+}
+
+/* Styling for the new AR sidebar toggle button */
+#arSidebarToggle {
+  position: absolute;
+  top: 18px; /* Adjusted to match #sidebarToggle's top */
+  left: 15px; /* Adjusted for padding within sidebar */
+  font-size: 26px; /* Match #sidebarToggle */
+  background: none;
+  border: none;
+  color: var(
+    --accent-cold
+  ); /* Match color of other interactive elements in sidebar */
+  cursor: pointer;
+  z-index: 10; /* Ensure it's above other sidebar content if necessary */
+  padding: 5px;
+  display: block; /* Will be shown/hidden by ar-active, but default to block if sidebar is open */
+}
+
+#arSidebarToggle:hover {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* Adjustments for sidebar h2 to accommodate the new button */
+#sidebar h2 {
+  position: relative;
+  padding-left: 45px; /* Make space for the toggle button */
+  /* margin-top: 5px; Align with button if needed, depends on final button size/pos */
+}
+
+/* Ensure the old #sidebarToggle is hidden when in AR mode */
+.ar-active #sidebarToggle {
+  display: none !important;
+}
+
+/* By default, the new AR toggle is part of the sidebar, so it's hidden when sidebar is closed.
+   If we want #arSidebarToggle to ONLY be visible in AR mode, then: */
+/*
+#arSidebarToggle { display: none; }
+.ar-active #arSidebarToggle { display: block; } 
+*/
+/* However, the current HTML places it inside #sidebar, so its visibility
+   is tied to #sidebar's visibility. We need to ensure it's displayed:block in AR mode
+   if the sidebar is open. The inline style display:none in HTML will be overridden by this if .ar-active is present.
+*/
+.ar-active #arSidebarToggle {
+  display: block !important; /* Ensure it's visible in AR mode if sidebar is open */
+}
+
+/* AR Surface Reselection Button Styling */
+#arReselectSurfaceBtn {
+  position: fixed;
+  bottom: 70px; /* Position above AR status message or other bottom elements */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background-color: var(--accent-cold);
+  color: var(--bg-1);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1050; /* Above canvas, potentially below modals if any */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: none; /* Initially hidden, JS will control visibility */
+}
+
+#arReselectSurfaceBtn:hover {
+  background-color: #fff;
+  color: var(--accent-cold);
+}
+
+.ar-active #arReselectSurfaceBtn {
+  /* display: block; */ /* JS will manage display: block/none based on whether model is placed */
+  /* This rule is just to ensure it *can* be shown if JS decides so in AR mode.
+       If UIManager.showReselectSurfaceButton sets display:block, this isn't strictly needed.
+       But if it were to default to display:none for .ar-active, this would be problematic.
+       Let's rely on JS for the precise show/hide logic.
+    */
+}
+
 /* 2) area video a tutta larghezza (e linea ciano, se l’hai) */
 body.sidebar-closed #arjs-video,
 body.sidebar-closed a-scene,
