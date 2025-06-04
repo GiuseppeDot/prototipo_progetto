@@ -133,23 +133,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
           stopQRScanner();
 
-          // Call WebXRManager to enable the Start AR button
-          // Assuming WebXRManager is exposed on the window object by app.js
-          if (
-            window.WebXRManager &&
-            typeof window.WebXRManager.prepareForXRSession === "function"
-          ) {
-            window.WebXRManager.prepareForXRSession();
-            // Optionally, pass QR code data: window.WebXRManager.prepareForXRSession(code.data);
+          // Transition to AR mode using UIManager
+          // ARController is already initialized by app.js and AR.js will use the camera
+          if (window.UIManager && typeof window.UIManager.enterARMode === 'function') {
+            window.UIManager.enterARMode();
+            window.UIManager?.showARStatusMessage("QR Code Scanned. AR.js Active. Look for the marker.", 5000);
           } else {
-            console.error(
-              "WebXRManager.prepareForXRSession() not found. Cannot proceed to AR."
-            );
-            // alert("Error: AR system is not ready. Please reload."); // Replaced by UIManager message
-            window.UIManager?.showARStatusMessage(
-              "Error: AR system not ready. Please refresh and try again.",
-              0
-            );
+            console.error("UIManager.enterARMode() not found. Cannot set up AR UI.");
+            // Optionally, provide a fallback alert or message if UIManager is critical here
+            alert("Error: UI Manager not found. AR experience may not start correctly.");
           }
           return; // Exit scan loop
         }

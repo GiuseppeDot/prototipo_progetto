@@ -103,25 +103,11 @@ export const UIManager = {
       const showARButton = e.target.closest(".showAR");
       if (showARButton && showARButton.dataset.src) {
         const itemFile = showARButton.dataset.src;
-        this.setSelectedModelUrl(itemFile);
+        this.setSelectedModelUrl(itemFile); // This is the key part for ARController
         console.log(".showAR button clicked, model URL set to:", itemFile);
 
-        if (document.body.classList.contains("ar-active")) {
-          if (
-            window.WebXRManager &&
-            typeof window.WebXRManager.hotSwapPlacedModel === "function"
-          ) {
-            // itemFile is just the filename, e.g., "Cibo.glb"
-            // WebXRManager.hotSwapPlacedModel will prepend "./asset/"
-            window.WebXRManager.hotSwapPlacedModel(itemFile);
-          } else {
-            console.error(
-              "WebXRManager.hotSwapPlacedModel not found while in AR mode."
-            );
-          }
-        }
-        // If not in AR mode, simply selecting the model URL is enough.
-        // The normal flow (QR scan -> Start AR -> Tap to place) will use the new URL.
+        // The following block that called WebXRManager.hotSwapPlacedModel is removed.
+        // ARController will pick up the change to selectedModelUrl in its update loop.
       }
     });
 
@@ -145,23 +131,23 @@ export const UIManager = {
       );
     }
 
-    // Event listener for the AR Reselect Surface button
-    const reselectBtn = document.getElementById("arReselectSurfaceBtn");
-    if (reselectBtn) {
-      reselectBtn.addEventListener("click", () => {
-        if (
-          window.WebXRManager &&
-          typeof window.WebXRManager.clearPlacedModelAndReselectSurface ===
-            "function"
-        ) {
-          window.WebXRManager.clearPlacedModelAndReselectSurface();
-        } else {
-          console.error(
-            "WebXRManager.clearPlacedModelAndReselectSurface not found."
-          );
-        }
-      });
-    }
+    // Event listener for AR Reselect Surface button removed as it's WebXR specific
+    // const reselectBtn = document.getElementById("arReselectSurfaceBtn");
+    // if (reselectBtn) {
+    //   reselectBtn.addEventListener("click", () => {
+    //     if (
+    //       window.WebXRManager &&
+    //       typeof window.WebXRManager.clearPlacedModelAndReselectSurface ===
+    //         "function"
+    //     ) {
+    //       window.WebXRManager.clearPlacedModelAndReselectSurface();
+    //     } else {
+    //       console.error(
+    //         "WebXRManager.clearPlacedModelAndReselectSurface not found."
+    //       );
+    //     }
+    //   });
+    // }
   },
 
   toggleSidebar() {
@@ -381,7 +367,8 @@ export const UIManager = {
 
     // Call handleResize to adjust canvas for AR mode (e.g., if sidebar state affects it)
     // The CSS for .ar-active #three-canvas will also apply.
-    this.handleResize();
+    // this.handleResize(); // Now called by setARMode
+    this.setARMode(true); // Calls handleResize internally
     this.hideReselectSurfaceButton(); // Ensure it's hidden when entering AR mode initially
     // Hide other non-essential UI elements via CSS by the .ar-active class on body.
   },
@@ -392,12 +379,31 @@ export const UIManager = {
     // If sidebar was closed in AR, ensure it's open by default when exiting AR.
     // Or, preserve its state - for now, let's ensure it's open or user can open it.
     // document.body.classList.remove('sidebar-closed'); // Optional: force sidebar open on exit
-    this.hideReselectSurfaceButton(); // Ensure it's hidden when exiting AR mode
 
     // Call handleResize to restore canvas to normal mode layout
-    this.handleResize();
+    // this.handleResize(); // Now called by setARMode
+    this.setARMode(false); // Calls handleResize internally
+    this.hideReselectSurfaceButton(); // Ensure it's hidden when exiting AR mode
     // QR Scanner UI visibility is typically handled by test.js when AR session ends
     // and restartQRScanning() is called.
+  },
+
+  setARMode(isARModeActive) {
+    const arSidebarToggleButton = document.getElementById("arSidebarToggle");
+    if (isARModeActive) {
+      document.body.classList.add("ar-active-specific-ui-hide");
+      if (arSidebarToggleButton) {
+        // Assuming 'block' is the correct display style when visible.
+        // Adjust if it's 'flex', 'inline-block', etc., based on its default CSS.
+        arSidebarToggleButton.style.display = "block";
+      }
+    } else {
+      document.body.classList.remove("ar-active-specific-ui-hide");
+      if (arSidebarToggleButton) {
+        arSidebarToggleButton.style.display = "none";
+      }
+    }
+    this.handleResize(); // Call resize after UI changes that might affect layout
   },
 
   showReselectSurfaceButton() {
@@ -414,7 +420,23 @@ export const UIManager = {
       btn.style.display = "none";
     }
   },
+  // Make setARMode available if needed externally, though primarily used internally
+  // setARMode: this.setARMode, // This line will cause an error due to 'this' context
+  // Correct way to add it to the export is directly:
+  // setARMode, // This will be defined later if we bind 'this' or make it a standalone function
 };
+// Let's define setARMode outside or ensure 'this' is correctly bound if it stays within the object.
+// For simplicity and to match the export pattern, we'll adjust the UIManager object structure slightly
+// or ensure methods are correctly bound if they rely on 'this' and are also directly exported.
+
+// Given the current structure, methods are part of the UIManager object.
+// If setARMode needs to be part of the public API and callable as UIManager.setARMode(),
+// it should be defined within the UIManager object literal like other methods.
+// The previous diff already placed it inside the UIManager object.
+// The export will make all public methods of UIManager available.
+
+// No direct changes needed here for export if setARMode is defined within UIManager object.
+// The existing `export const UIManager = { ... }` exports all methods within it.
 
 // Menu Data (copied from test.js - this might be better managed elsewhere in a real app)
 const menuData = [

@@ -2,7 +2,7 @@ console.log("app.js executing");
 import * as THREE from "three";
 console.log("THREE version:", THREE.REVISION);
 import { UIManager } from "./UIManager.js";
-// import { ARController } from "./ARController.js"; // Commented out for WebXR
+import { ARController } from "./ARController.js";
 import { DragController } from "./DragController.js"; // Re-enable DragController
 import { RotationController } from "./RotationController.js"; // Ensure this is imported
 import { WebXRManager } from "./WebXRManager.js"; // Add this
@@ -53,6 +53,9 @@ function startApp() {
   WebXRManager.init(renderer, scene, camera);
   console.log("app.js: WebXRManager initialized.");
 
+  ARController.init(scene, camera, renderer);
+  console.log("app.js: ARController initialized for AR.js marker tracking.");
+
   // Expose modules to the window object for global access if needed by other scripts/debugging
   window.UIManager = UIManager;
   window.DragController = DragController; // Re-enable DragController exposure
@@ -65,29 +68,12 @@ function startApp() {
   console.log("app.js: Firing WebXRManagerReady event.");
   document.dispatchEvent(new CustomEvent("WebXRManagerReady"));
 
-  // Direct AR Initialization (assuming THREEx is ready after window.onload)
-  // Commented out for WebXR integration
-  /*
-  if (typeof THREEx !== "undefined" && THREEx.ArToolkitContext) {
-    console.log(
-      "AR.js (THREEx) for Three.js appears to be loaded. Initializing AR system."
-    );
-    ARController.init(scene, camera, renderer);
-    console.log("app.js: ARController initialized.");
-  } else {
-    console.error(
-      "AR.js (THREEx) for Three.js not loaded correctly even after window.onload. AR features may not work."
-    );
-    // Optionally, display a message to the user in the UI or disable AR-specific UI elements
-  }
-  */
-
   // --- ANIMATION LOOP ---
   // The new signature for the animation loop callback is (timestamp, frame)
   renderer.setAnimationLoop((timestamp, frame) => {
     const deltaTime = clock.getDelta(); // deltaTime might still be useful
 
-    // ARController.update(); // Still commented out
+    ARController.update();
     RotationController.update(deltaTime);
     // DragController.update(); // No per-frame update needed for DragController as per current setup
 
