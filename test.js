@@ -219,4 +219,3 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 6000);
   */
 });
-// console.log("sono qua"); // This log might be outside DOMContentLoaded, check if intended
