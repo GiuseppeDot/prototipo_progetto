@@ -9,6 +9,7 @@ let camera = null; // This will be the Three.js camera from app.js
 let hitTestSource = null;
 let reticle = null;
 let currentModel = null; // To store the currently placed model
+let pendingModelUrl = null; // Store model to place when surface is detected
 const gltfLoader = new GLTFLoader(); // Instantiate GLTFLoader
 const raycaster = new THREE.Raycaster(); // For interaction raycasting
 let xrController = null; // Represents the primary input (e.g., screen tap)
@@ -354,6 +355,11 @@ const WebXRManager = {
             );
             reticleHasShownSurfaceMessage = true;
           }
+
+          if (pendingModelUrl) {
+            this.placeModel(pendingModelUrl, reticle.matrix);
+            pendingModelUrl = null;
+          }
         }
       } else {
         if (reticle) {
@@ -452,6 +458,10 @@ const WebXRManager = {
         console.error("Error loading GLTF model in WebXRManager:", error);
       }
     );
+  },
+
+  placeModelWhenSurfaceFound(modelUrl) {
+    pendingModelUrl = modelUrl;
   },
 
   clearPlacedModelAndReselectSurface() {

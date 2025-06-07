@@ -106,22 +106,44 @@ export const UIManager = {
         this.setSelectedModelUrl(itemFile);
         console.log(".showAR button clicked, model URL set to:", itemFile);
 
-        if (document.body.classList.contains("ar-active")) {
+        const xrSession = window.WebXRManager?.getXRSession?.();
+        if (xrSession) {
           if (
             window.WebXRManager &&
             typeof window.WebXRManager.hotSwapPlacedModel === "function"
           ) {
-            // itemFile is just the filename, e.g., "Cibo.glb"
-            // WebXRManager.hotSwapPlacedModel will prepend "./asset/"
             window.WebXRManager.hotSwapPlacedModel(itemFile);
           } else {
             console.error(
               "WebXRManager.hotSwapPlacedModel not found while in AR mode."
             );
           }
+        } else {
+          const startBtn = document.getElementById("startXRButton");
+          if (
+            window.WebXRManager &&
+            startBtn &&
+            startBtn.style.display === "block"
+          ) {
+            if (
+              typeof window.WebXRManager.placeModelWhenSurfaceFound ===
+              "function"
+            ) {
+              window.WebXRManager.placeModelWhenSurfaceFound(
+                "./asset/" + itemFile
+              );
+            }
+            window.WebXRManager.activateXR();
+          } else {
+            console.warn("AR session not ready. Scan QR code first.");
+            if (typeof this.showARStatusMessage === "function") {
+              this.showARStatusMessage(
+                "Scansiona il QR code prima di avviare l'AR.",
+                3000
+              );
+            }
+          }
         }
-        // If not in AR mode, simply selecting the model URL is enough.
-        // The normal flow (QR scan -> Start AR -> Tap to place) will use the new URL.
       }
     });
 
