@@ -39,7 +39,7 @@ function startApp() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // --- INITIALIZE MODULES ---
-  RotationController.init(renderer);
+  RotationController.init(renderer, camera);
   console.log("app.js: RotationController initialized.");
 
   // UIManager.init will call handleResize, which sets initial canvas size based on sidebar state
