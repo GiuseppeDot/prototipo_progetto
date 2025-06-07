@@ -88,6 +88,9 @@ window.addEventListener("DOMContentLoaded", () => {
       });
   }
 
+  // Expose for testing
+  window.startQRScanner = startQRScanner;
+
   function stopQRScanner() {
     console.log("Stopping QR Scanner...");
     if (currentQRScanRequest) {
@@ -105,6 +108,9 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     console.log("QR Scanner stopped, UI hidden.");
   }
+
+  // Expose for testing
+  window.stopQRScanner = stopQRScanner;
 
   function scanQRCode() {
     if (qrVideoFeed.readyState === qrVideoFeed.HAVE_ENOUGH_DATA) {
