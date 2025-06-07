@@ -308,29 +308,6 @@ button:hover {
   transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
-/* A-scene & video layout + click fix */
-#arjs-video {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w);
-  width: calc(100% - var(--sidebar-w));
-  height: 100%;
-  object-fit: cover;
-  z-index: 0 !important;
-  pointer-events: none;
-  filter: brightness(0.88) contrast(1.15) saturate(1.1);
-}
-a-scene,
-a-scene canvas {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w);
-  width: calc(100% - var(--sidebar-w));
-  height: 100%;
-  pointer-events: none;
-  background: transparent !important;
-  z-index: 1;
-}
 
 /* scrollbar */
 ::-webkit-scrollbar {
@@ -372,12 +349,6 @@ body.sidebar-collapsed #sidebar {
   transform: translateX(-100%); /* sidebar fuori dallo schermo */
 }
 
-body.sidebar-collapsed #arjs-video,
-body.sidebar-collapsed a-scene,
-body.sidebar-collapsed a-scene canvas {
-  left: 0;
-  width: 100%; /* area video/scena a pieno schermo */
-}
 
 /* sposta cartBtn leggermente più a sinistra quando la sidebar è visibile */
 #cartBtn {
@@ -512,9 +483,6 @@ body.ar-active-specific-ui-hide #autoRotateBtn {
    No specific .ar-active CSS rule needed here for its display property. */
 
 /* 2) area video a tutta larghezza (e linea ciano, se l’hai) */
-body.sidebar-closed #arjs-video,
-body.sidebar-closed a-scene,
-body.sidebar-closed a-scene canvas,
 body.sidebar-closed model-viewer {
   left: 0 !important;
   width: 100% !important;
