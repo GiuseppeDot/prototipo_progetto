@@ -99,18 +99,6 @@ const WebXRManager = {
       if (window.restartQRScanning) window.restartQRScanning();
       return;
     }
-
-    if (startXRButton) {
-      startXRButton.disabled = false;
-      startXRButton.style.display = "block"; // Make it visible
-      console.log("Start AR button enabled and visible.");
-      window.UIManager?.showARStatusMessage(
-        "QR code scanned! Click 'Start AR'.",
-        0
-      );
-    } else {
-      console.error("Start XR Button not found");
-    }
   },
 
   async activateXR() {
