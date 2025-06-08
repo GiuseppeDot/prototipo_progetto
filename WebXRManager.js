@@ -99,35 +99,6 @@ const WebXRManager = {
       if (window.restartQRScanning) window.restartQRScanning();
       return;
     }
-
-    if (startXRButton) {
-      // Hide the manual start button and launch AR immediately
-      startXRButton.disabled = true;
-      startXRButton.style.display = "none";
-    }
-
-    window.UIManager?.showARStatusMessage(
-      "QR code scanned. Avvio AR...",
-      2000
-    );
-
-    try {
-      await this.activateXR();
-      window.UIManager?.showARStatusMessage(
-        "Scegli un modello dal menu a sinistra.",
-        5000
-      );
-    } catch (e) {
-      console.error("Automatic XR activation failed:", e);
-      if (startXRButton) {
-        startXRButton.disabled = false;
-        startXRButton.style.display = "block";
-      }
-      window.UIManager?.showARStatusMessage(
-        "Tocca 'Start AR' per continuare.",
-        5000
-      );
-    }
   },
 
   async activateXR() {
