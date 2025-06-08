@@ -101,15 +101,32 @@ const WebXRManager = {
     }
 
     if (startXRButton) {
-      startXRButton.disabled = false;
-      startXRButton.style.display = "block"; // Make it visible
-      console.log("Start AR button enabled and visible.");
+      // Hide the manual start button and launch AR immediately
+      startXRButton.disabled = true;
+      startXRButton.style.display = "none";
+    }
+
+    window.UIManager?.showARStatusMessage(
+      "QR code scanned. Avvio AR...",
+      2000
+    );
+
+    try {
+      await this.activateXR();
       window.UIManager?.showARStatusMessage(
-        "QR code scanned! Click 'Start AR'.",
-        0
+        "Scegli un modello dal menu a sinistra.",
+        5000
       );
-    } else {
-      console.error("Start XR Button not found");
+    } catch (e) {
+      console.error("Automatic XR activation failed:", e);
+      if (startXRButton) {
+        startXRButton.disabled = false;
+        startXRButton.style.display = "block";
+      }
+      window.UIManager?.showARStatusMessage(
+        "Tocca 'Start AR' per continuare.",
+        5000
+      );
     }
   },
 
