@@ -64,7 +64,7 @@ const WebXRManager = {
     }
   },
 
-  prepareForXRSession() {
+  async prepareForXRSession() {
     console.log("WebXRManager: Preparing for XR session after QR code scan.");
     const startXRButton = document.getElementById("startXRButton");
     const qrScannerUI = document.getElementById("qrScannerUI");
@@ -74,36 +74,59 @@ const WebXRManager = {
     } else {
       console.error("QR Scanner UI not found for hiding.");
     }
-    window.UIManager?.showARStatusMessage(
-      "QR code scanned! Click 'Start AR'.",
-      0
-    );
+
+    if (!navigator.xr) {
+      console.error(
+        "Cannot enable Start AR button, WebXR API not available."
+      );
+      window.UIManager?.showARStatusMessage(
+        "WebXR non disponibile su questo dispositivo.",
+        5000
+      );
+      if (window.restartQRScanning) window.restartQRScanning();
+      return;
+    }
+
+    const supported = await navigator.xr.isSessionSupported("immersive-ar");
+    if (!supported) {
+      console.error(
+        "Cannot enable Start AR button, Immersive AR not supported."
+      );
+      window.UIManager?.showARStatusMessage(
+        "AR non supportata su questo dispositivo.",
+        5000
+      );
+      if (window.restartQRScanning) window.restartQRScanning();
+      return;
+    }
 
     if (startXRButton) {
-      // Enable the button only if AR is supported (checked in init)
-      if (navigator.xr && startXRButton.disabled === true) {
-        // Check if it was disabled due to lack of support
-        navigator.xr.isSessionSupported("immersive-ar").then((supported) => {
-          if (supported) {
-            startXRButton.disabled = false;
-            startXRButton.style.display = "block"; // Make it visible
-            console.log("Start AR button enabled and visible.");
-          } else {
-            console.error(
-              "Cannot enable Start AR button, Immersive AR not supported."
-            );
-          }
-        });
-      } else if (navigator.xr) {
-        // if XR is available and button wasn't disabled for lack of support
+      // Hide the manual start button and launch AR immediately
+      startXRButton.disabled = true;
+      startXRButton.style.display = "none";
+    }
+
+    window.UIManager?.showARStatusMessage(
+      "QR code scanned. Avvio AR...",
+      2000
+    );
+
+    try {
+      await this.activateXR();
+      window.UIManager?.showARStatusMessage(
+        "Scegli un modello dal menu a sinistra.",
+        5000
+      );
+    } catch (e) {
+      console.error("Automatic XR activation failed:", e);
+      if (startXRButton) {
         startXRButton.disabled = false;
-        startXRButton.style.display = "block"; // Make it visible
-        console.log("Start AR button enabled and visible.");
-      } else {
-        console.error(
-          "Cannot enable Start AR button, WebXR API not available."
-        );
+        startXRButton.style.display = "block";
       }
+      window.UIManager?.showARStatusMessage(
+        "Tocca 'Start AR' per continuare.",
+        5000
+      );
     }
   },
 

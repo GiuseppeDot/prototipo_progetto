@@ -415,7 +415,6 @@ body.sidebar-closed #sidebar {
 
 /* Hide Non-Essential UI Elements in AR Mode */
 /* This class is added to body by UIManager.setARMode(true) */
-body.ar-active-specific-ui-hide #sidebarToggle, /* Original global toggle */
 body.ar-active-specific-ui-hide #autoRotateBtn {
   /* Auto-rotate button */
   display: none !important;
@@ -452,8 +451,8 @@ body.ar-active-specific-ui-hide #autoRotateBtn {
   text-shadow: 0 0 6px var(--accent-hot);
 }
 
-/* The .ar-active #sidebarToggle rule (for old toggle) is replaced by body.ar-active-specific-ui-hide #sidebarToggle */
-/* The .ar-active #arSidebarToggle rule (for new AR toggle) is removed as UIManager handles its display property. */
+/* The old .ar-active #sidebarToggle rule was removed so the toggle remains visible in AR */
+/* #arSidebarToggle visibility is managed by UIManager */
 
 /* AR Surface Reselection Button Styling */
 #arReselectSurfaceBtn {
