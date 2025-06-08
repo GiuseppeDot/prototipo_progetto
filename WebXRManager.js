@@ -87,21 +87,9 @@ const WebXRManager = {
       return;
     }
 
-    const supported = await navigator.xr.isSessionSupported("immersive-ar");
-    if (!supported) {
-      console.error(
-        "Cannot enable Start AR button, Immersive AR not supported."
-      );
-      window.UIManager?.showARStatusMessage(
+      // Hide the manual start button while attempting automatic start
         "AR non supportata su questo dispositivo.",
-        5000
-      );
       if (window.restartQRScanning) window.restartQRScanning();
-      return;
-    }
-  },
-
-  async activateXR() {
     const startXRButton = document.getElementById("startXRButton");
     if (startXRButton && startXRButton.disabled) {
       console.warn("activateXR called but Start AR button is disabled.");
