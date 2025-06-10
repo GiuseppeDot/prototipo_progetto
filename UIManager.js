@@ -16,7 +16,9 @@ function getSidebarWidth() {
 }
 
 export const UIManager = {
-  selectedModelUrl: null, // Added to store the selected model URL
+  selectedModelUrl: null, // Store the selected model URL
+  selectedItem: null, // Store full menu item info
+  currentOverlayItem: null, // Item shown in AR overlay
 
   init(threeRenderer, threeCamera, canvasElement, rotationControllerInstance) {
     // Added rotationControllerInstance
@@ -184,6 +186,16 @@ export const UIManager = {
         }
       });
     }
+
+    const arAddBtn = document.getElementById("arAddToCartBtn");
+    if (arAddBtn) {
+      arAddBtn.addEventListener("click", () => {
+        if (this.currentOverlayItem) {
+          this.addItemToCart(this.currentOverlayItem);
+          this.hideARModelOverlay();
+        }
+      });
+    }
   },
 
   toggleSidebar() {
@@ -343,7 +355,11 @@ export const UIManager = {
   // Methods for model URL management
   setSelectedModelUrl(url) {
     this.selectedModelUrl = url;
+    this.selectedItem = menuData.find((i) => i.file === url) || null;
     console.log("UIManager: Selected model URL set to", url);
+    if (this.selectedItem) {
+      console.log("UIManager: Selected item set to", this.selectedItem.name);
+    }
     // Potentially add visual feedback here
   },
 
@@ -353,6 +369,10 @@ export const UIManager = {
       this.selectedModelUrl
     );
     return this.selectedModelUrl;
+  },
+
+  getSelectedItem() {
+    return this.selectedItem;
   },
 
   // --- AR Status Message Functions ---
@@ -388,6 +408,22 @@ export const UIManager = {
       this.statusMessageTimeout = null;
     }
   },
+
+  showARModelOverlay(item) {
+    const overlay = document.getElementById("arModelOverlay");
+    const nameEl = document.getElementById("arModelName");
+    if (overlay && nameEl && item) {
+      nameEl.textContent = item.name;
+      overlay.style.display = "block";
+      this.currentOverlayItem = item;
+    }
+  },
+
+  hideARModelOverlay() {
+    const overlay = document.getElementById("arModelOverlay");
+    if (overlay) overlay.style.display = "none";
+    this.currentOverlayItem = null;
+  },
   statusMessageTimeout: null, // Variable to hold the timeout ID
 
   enterARMode() {
@@ -420,6 +456,7 @@ export const UIManager = {
     // this.handleResize(); // Now called by setARMode
     this.setARMode(false); // Calls handleResize internally
     this.hideReselectSurfaceButton(); // Ensure it's hidden when exiting AR mode
+    this.hideARModelOverlay();
     // QR Scanner UI visibility is typically handled by test.js when AR session ends
     // and restartQRScanning() is called.
   },

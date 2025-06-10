@@ -204,6 +204,27 @@
       "
     ></div>
 
+    <!-- AR Model Overlay -->
+    <div
+      id="arModelOverlay"
+      style="
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        display: none;
+        z-index: 2002;
+        text-align: center;
+      "
+    >
+      <p id="arModelName" style="margin: 0 0 8px; font-weight: bold"></p>
+      <button id="arAddToCartBtn">Aggiungi al carrello</button>
+    </div>
+
     <!-- AR Surface Reselection Button -->
     <button id="arReselectSurfaceBtn" style="display: none">
       Reselect Surface
