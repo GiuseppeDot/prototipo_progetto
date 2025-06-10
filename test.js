@@ -35,6 +35,13 @@ window.addEventListener("DOMContentLoaded", () => {
   const qrVideoFeed = qs("#qrVideoFeed");
   const qrCanvas = qs("#qrCanvas");
   const qrCanvasCtx = qrCanvas.getContext("2d");
+
+  // Grab the A-Frame scene and keep it paused until the QR code is scanned
+  const aScene = qs('#aframeScene');
+  if (aScene && aScene.pause) {
+    // Prevent AR.js from requesting the camera before the QR code is read
+    aScene.pause();
+  }
   let currentQRScanRequest = null; // To store the requestAnimationFrame id
   let videoStream = null; // To store the MediaStream
 
@@ -116,6 +123,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const scene = qs('#aframeScene');
     if (scene) {
       scene.style.display = 'block';
+
     }
   }
 
