@@ -260,6 +260,9 @@ const WebXRManager = {
     }
     if (window.UIManager) {
       window.UIManager.hideReselectSurfaceButton(); // Ensure it's hidden when session ends
+      if (window.UIManager.hideARModelOverlay) {
+        window.UIManager.hideARModelOverlay();
+      }
     }
     window.UIManager?.showARStatusMessage("AR Session Ended.", 3000);
     if (currentModel) {
@@ -423,6 +426,10 @@ const WebXRManager = {
         if (reticle) reticle.visible = false; // Hide reticle after successful placement
         console.log("WebXRManager: Model placed successfully.", currentModel);
         window.UIManager?.showARStatusMessage("Model placed!", 3000);
+        const itemInfo = window.UIManager?.getSelectedItem?.();
+        if (itemInfo && window.UIManager?.showARModelOverlay) {
+          window.UIManager.showARModelOverlay(itemInfo);
+        }
         reticleHasShownSurfaceMessage = false; // Allow surface message again if model is removed / new placement starts
 
         // Integrate with DragController and RotationController
@@ -465,6 +472,9 @@ const WebXRManager = {
       this.scene.remove(currentModel); // Assuming this.scene is valid
       // TODO: Dispose of geometry/materials if this.currentModel won't be reused
       currentModel = null;
+    }
+    if (window.UIManager && window.UIManager.hideARModelOverlay) {
+      window.UIManager.hideARModelOverlay();
     }
     if (reticle) {
       reticle.visible = true;
@@ -535,6 +545,10 @@ const WebXRManager = {
           `Changed model to ${newModelFileName.replace(".glb", "")}!`,
           3000
         );
+      }
+      if (window.UIManager?.getSelectedItem && window.UIManager?.showARModelOverlay) {
+        const itemInfo = window.UIManager.getSelectedItem();
+        window.UIManager.showARModelOverlay(itemInfo);
       }
     } else {
       // If no model is currently placed, UIManager.setSelectedModelUrl has already updated the next model.
