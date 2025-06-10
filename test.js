@@ -127,6 +127,13 @@ window.addEventListener("DOMContentLoaded", () => {
       if (scene.play) {
         scene.play();
       }
+
+      const dishEntity = scene.querySelector('#dishEntity');
+      if (dishEntity) {
+        const modelFile = window.UIManager?.getSelectedModelUrl?.() || 'Cibo.glb';
+        dishEntity.setAttribute('gltf-model', `asset/${modelFile}`);
+      }
+
       const arSystem = scene.systems && scene.systems["arjs"];
       if (arSystem && arSystem.start) {
         arSystem.start();

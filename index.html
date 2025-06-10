@@ -114,11 +114,8 @@
 
 
     <a-scene id="aframeScene" embedded vr-mode-ui="enabled: false" style="display:none" arjs="sourceType: webcam; debugUIEnabled: false;">
-      <a-assets>
-        <a-asset-item id="dishModel" src="asset/Cibo.glb"></a-asset-item>
-      </a-assets>
       <a-marker type="pattern" url="asset/markerQR.patt">
-        <a-entity gltf-model="#dishModel" scale="0.5 0.5 0.5"></a-entity>
+        <a-entity id="dishEntity" scale="0.5 0.5 0.5"></a-entity>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
