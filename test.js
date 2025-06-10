@@ -112,6 +112,13 @@ window.addEventListener("DOMContentLoaded", () => {
   // Expose for testing
   window.stopQRScanner = stopQRScanner;
 
+  function startMarkerAR() {
+    const scene = qs('#aframeScene');
+    if (scene) {
+      scene.style.display = 'block';
+    }
+  }
+
   function scanQRCode() {
     if (qrVideoFeed.readyState === qrVideoFeed.HAVE_ENOUGH_DATA) {
       // Ensure canvas is same size as video display size, in case it changed
@@ -138,25 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
           // e.g. if (code.data.startsWith("https://myar.app/experience?id="))
 
           stopQRScanner();
-
-          // Call WebXRManager to enable the Start AR button
-          // Assuming WebXRManager is exposed on the window object by app.js
-          if (
-            window.WebXRManager &&
-            typeof window.WebXRManager.prepareForXRSession === "function"
-          ) {
-            window.WebXRManager.prepareForXRSession();
-            // Optionally, pass QR code data: window.WebXRManager.prepareForXRSession(code.data);
-          } else {
-            console.error(
-              "WebXRManager.prepareForXRSession() not found. Cannot proceed to AR."
-            );
-            // alert("Error: AR system is not ready. Please reload."); // Replaced by UIManager message
-            window.UIManager?.showARStatusMessage(
-              "Error: AR system not ready. Please refresh and try again.",
-              0
-            );
-          }
+          startMarkerAR();
           return; // Exit scan loop
         }
       } catch (err) {
