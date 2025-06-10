@@ -35,6 +35,13 @@ window.addEventListener("DOMContentLoaded", () => {
   const qrVideoFeed = qs("#qrVideoFeed");
   const qrCanvas = qs("#qrCanvas");
   const qrCanvasCtx = qrCanvas.getContext("2d");
+
+  // Grab the A-Frame scene and keep it paused until the QR code is scanned
+  const aScene = qs('#aframeScene');
+  if (aScene && aScene.pause) {
+    // Prevent AR.js from requesting the camera before the QR code is read
+    aScene.pause();
+  }
   let currentQRScanRequest = null; // To store the requestAnimationFrame id
   let videoStream = null; // To store the MediaStream
 
@@ -112,6 +119,22 @@ window.addEventListener("DOMContentLoaded", () => {
   // Expose for testing
   window.stopQRScanner = stopQRScanner;
 
+  function startMarkerAR() {
+    const scene = qs('#aframeScene');
+    if (scene) {
+      scene.style.display = 'block';
+      // Start the AR scene if it was previously paused
+      if (scene.play) {
+        scene.play();
+      }
+      const arSystem = scene.systems && scene.systems["arjs"];
+      if (arSystem && arSystem.start) {
+        arSystem.start();
+      }
+      console.log("Marker-based AR started");
+    }
+  }
+
   function scanQRCode() {
     if (qrVideoFeed.readyState === qrVideoFeed.HAVE_ENOUGH_DATA) {
       // Ensure canvas is same size as video display size, in case it changed
@@ -138,25 +161,7 @@ window.addEventListener("DOMContentLoaded", () => {
           // e.g. if (code.data.startsWith("https://myar.app/experience?id="))
 
           stopQRScanner();
-
-          // Call WebXRManager to enable the Start AR button
-          // Assuming WebXRManager is exposed on the window object by app.js
-          if (
-            window.WebXRManager &&
-            typeof window.WebXRManager.prepareForXRSession === "function"
-          ) {
-            window.WebXRManager.prepareForXRSession();
-            // Optionally, pass QR code data: window.WebXRManager.prepareForXRSession(code.data);
-          } else {
-            console.error(
-              "WebXRManager.prepareForXRSession() not found. Cannot proceed to AR."
-            );
-            // alert("Error: AR system is not ready. Please reload."); // Replaced by UIManager message
-            window.UIManager?.showARStatusMessage(
-              "Error: AR system not ready. Please refresh and try again.",
-              0
-            );
-          }
+          startMarkerAR();
           return; // Exit scan loop
         }
       } catch (err) {

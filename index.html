@@ -16,6 +16,8 @@
     <!-- <script src="https://jeromeetienne.github.io/AR.js/three.js/build/ar-threex.js"></script> -->
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1/dist/jsQR.min.js"></script>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.1/aframe/build/aframe-ar.js"></script>
     <!-- Re-enable for QR scanning -->
 
     <!-- THEME -->
@@ -23,7 +25,7 @@
   </head>
 
   <body>
-    <canvas id="three-canvas"></canvas>
+    <canvas id="three-canvas" style="display:none"></canvas>
 
     <!-- Pulsante per riaprire il menu quando è chiuso -->
     <button id="sidebarToggle" aria-label="Apri menu">☰</button>
@@ -110,43 +112,16 @@
       <!-- For jsQR processing -->
     </div>
 
-    <!-- ===== Placeholder for WebXR Button ============================ -->
-    <button
-      id="startXRButton"
-      style="
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 1000;
-        display: none;
-      "
-    >
-      Start AR
-    </button>
 
-    <!-- ===== A-FRAME SCENE (Commented out) ========================================== -->
-    <!--
-    <a-scene
-      embedded
-      arjs="sourceType: webcam; debugUIEnabled: true; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-    >
+    <a-scene id="aframeScene" embedded vr-mode-ui="enabled: false" style="display:none" arjs="sourceType: webcam; debugUIEnabled: false;">
       <a-assets>
-         -- qrCanvas was here, moved to qrScannerUI --
+        <a-asset-item id="dishModel" src="asset/Cibo.glb"></a-asset-item>
       </a-assets>
       <a-marker type="pattern" url="asset/markerQR.patt">
-        <a-entity
-          id="modelHolder"
-          rotation="0 0 0"
-          position="0 0.25 0"
-          scale="1 1 1"
-          gltf-model=""
-          visible="false"
-        >
-        </a-entity>
+        <a-entity gltf-model="#dishModel" scale="0.5 0.5 0.5"></a-entity>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
-    -->
     <img
       id="fallback"
       src=""
@@ -180,7 +155,6 @@
 
     <!-- ===== APP LOGIC ============================================= -->
     <!-- Ensure app.js is loaded as a module if it uses ES6 imports -->
-    <script type="module" src="app.js"></script>
     <script src="test.js"></script>
     <!-- Re-enable test.js for QR scanning logic -->
 
