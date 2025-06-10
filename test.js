@@ -123,15 +123,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const scene = qs('#aframeScene');
     if (scene) {
       scene.style.display = 'block';
-      // Start the AR scene if it was previously paused
-      if (scene.play) {
-        scene.play();
-      }
-      const arSystem = scene.systems && scene.systems["arjs"];
-      if (arSystem && arSystem.start) {
-        arSystem.start();
-      }
-      console.log("Marker-based AR started");
+
     }
   }
 
