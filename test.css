@@ -518,3 +518,12 @@ body:not(.sidebar-closed) #sidebarToggle {
   opacity: 0;
   pointer-events: none;
 }
+
+/* AR Model Overlay */
+#arModelOverlay button {
+  background: var(--accent-hot);
+  color: #000;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
