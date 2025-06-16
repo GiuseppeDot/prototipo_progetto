@@ -155,6 +155,7 @@
 
     <!-- ===== APP LOGIC ============================================= -->
     <!-- Ensure app.js is loaded as a module if it uses ES6 imports -->
+    <script type="module" src="app.js"></script>
     <script src="test.js"></script>
     <script type="module" src="3DPreview.js"></script>
     <!-- Re-enable test.js for QR scanning logic -->
@@ -206,7 +207,7 @@
     </button>
 
     <!-- 3D PREVIEW MODAL -->
-    <div id="previewModal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:3000;">
+    <div id="previewModal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: transparent; justify-content:center; align-items:center; z-index:3000;">
       <button id="closePreview" class="closeBtn" style="position:absolute; top:10px; right:10px;">✕</button>
       <canvas id="previewCanvas" style="width:80%; height:80%; max-width:400px;"></canvas>
     </div>
