@@ -149,6 +149,17 @@ export const UIManager = {
       }
     });
 
+    // Event listener for 3D preview buttons
+    document.addEventListener("click", (e) => {
+      const previewBtn = e.target.closest(".preview3D");
+      if (previewBtn && previewBtn.dataset.src) {
+        const itemFile = previewBtn.dataset.src;
+        if (window.Preview3D && typeof window.Preview3D.show === "function") {
+          window.Preview3D.show(`./asset/${itemFile}`);
+        }
+      }
+    });
+
     // Setup Auto-Rotate Button Listener
     const autoRotateButton = document.getElementById("autoRotateBtn");
     if (autoRotateButton && rotationControllerRef) {
@@ -267,6 +278,7 @@ export const UIManager = {
         <img src="${i.img}" alt="${i.name}">
         <h4>${i.name} – €${i.price.toFixed(2)}</h4>
         <p>${i.desc}</p>
+        <button class="preview3D" data-src="${i.file}">Anteprima 3D</button>
         <button class="showAR" data-src="${i.file}">Vedi in AR</button>
         <button class="addCart" data-src="${i.file}">Aggiungi</button>
       </div>`;
